@@ -1,9 +1,4 @@
 from setuptools import setup, find_packages
-from setuptools.command.install import install
-
-class CustomInstallCommand(install):
-    def run(self):
-        install.run(self)
 
 setup(
     description="Robô que digita listas de passageiro na ANTT",
@@ -12,9 +7,6 @@ setup(
     #scripts=["bin/ANTTSMARTBOT"],
     packages=find_packages(where='src', include=['anttsmartbot*']),
     package_dir={'': 'src'},
-    cmdclass={
-        "install": CustomInstallCommand,
-    }, 
 )
 
 """
