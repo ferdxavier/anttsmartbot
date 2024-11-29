@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+setup.py
+src/anttsmartbot.egg-info/PKG-INFO
+src/anttsmartbot.egg-info/SOURCES.txt
+src/anttsmartbot.egg-info/dependency_links.txt
+src/anttsmartbot.egg-info/top_level.txt
+tests/teste_module.py
