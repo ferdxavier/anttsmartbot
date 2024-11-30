@@ -7,7 +7,6 @@ path_listas = '/home/fernando/listas'
 time_sleep_default = 10
 
 def main_process():
-    print("")
     print("<<<<---------------------------------->>>>")
     print(f'Lendo pasta de listas de passageiros "{path_listas}".')
     files =  util.list_files(path_listas)
@@ -50,6 +49,7 @@ def main_process():
                     print("      # " +data["error"])
                     
                 time.sleep(1)
+                print("")
     else:
         print('Nenhum arquivo encontrado!')
 

@@ -1,0 +1,16 @@
+README.md
+pyproject.toml
+setup.py
+anttsmartbot.egg-info/PKG-INFO
+anttsmartbot.egg-info/SOURCES.txt
+anttsmartbot.egg-info/dependency_links.txt
+anttsmartbot.egg-info/top_level.txt
+src/anttsmartbot/bot.py
+src/anttsmartbot/image.py
+src/anttsmartbot/image2.py
+src/anttsmartbot/melhora_image.py
+src/anttsmartbot/processTravelerList.py
+src/anttsmartbot/spy.py
+src/models/model.py
+src/models/util.py
+tests/teste_module.py
