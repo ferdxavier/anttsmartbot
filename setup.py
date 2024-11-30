@@ -1,4 +1,9 @@
 from setuptools import setup, find_packages
+from setuptools.command.install import install
+
+class CustomInstallCommand(install):
+   def run(self):
+       install.run(self)
 
 setup(
     version="1.0.0",
@@ -10,6 +15,7 @@ setup(
     #scripts=["bin/ANTTSMARTBOT"],
     packages=['anttsmartbot', 'models'],
     package_dir={'anttsmartbot': 'src/anttsmartbot', 'models': 'src/models'},
+    cmdclass={"install": CustomInstallCommand, },
 )
 
 """
