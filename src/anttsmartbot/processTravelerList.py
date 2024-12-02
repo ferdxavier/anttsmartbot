@@ -1,13 +1,14 @@
 from models import util, model
 from bot import execute
 import json
+import os
 
 def processList(path_traveler_list):
     check_file = util.exist_file(path_traveler_list)
     if check_file['exist']:
         data = model.load_traveler_List(path_traveler_list)
         if not data["error"]:
-            with open("json_auth_site.json", encoding='utf-8') as my_json:
+            with open("./anttsmartbot/json_auth_site.json", encoding='utf-8') as my_json:
                 json_data = json.load(my_json)
                 
             traveler_List = data["traveler_List"]

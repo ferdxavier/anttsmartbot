@@ -1,4 +1,4 @@
-import easyocr
+"""import easyocr
 
 # Carregar imagem
 imagem = 'image2.jpg'
@@ -12,3 +12,5 @@ texto = reader.readtext(imagem)
 # Imprimir texto
 for item in texto:
     print(item[1])
+    
+    """

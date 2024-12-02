@@ -1,5 +1,5 @@
 import pandas as pd
-import PyPDF2
+#import PyPDF2
 
 class Passageiro:
     id: str
@@ -165,7 +165,7 @@ def isValidPassageiro(passageiro: Passageiro):
         return f'O campo SITUAÇÃO deve ser informado como "{SITUACAO[2]}" para Criança de Colo.'
     
     return None
-
+"""
 def load_traveler_List_PDF_normal(str):
     pdf_file = open(str, 'rb')
     pdf_reader = PyPDF2.PdfReader(pdf_file)
@@ -181,6 +181,6 @@ def load_traveler_List_PDF_normal(str):
     
 def load_traveler_List_PDF_dig(str):
     pass
-
+"""
 
 #load_traveler_List_PDF_normal('/home/fernando/listas/listateste2.pdf')
