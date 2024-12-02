@@ -1,7 +1,6 @@
 from models import util, model
 from bot import execute
 import json
-import os
 
 def processList(path_traveler_list):
     check_file = util.exist_file(path_traveler_list)
