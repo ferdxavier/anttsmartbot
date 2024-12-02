@@ -122,7 +122,7 @@ TIME_TRY_MANIFEST_PAGE = 0.4
 MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solicitacao1.asp?cmdOpcao=Consultar&txtNumeroSolicitacao='
 
 def execute(traveler_List: model.ListaViagem):
-    with open("./anttsmartbot/json_pages_map.json", encoding='utf-8') as my_json:
+    with open("json_pages_map.json", encoding='utf-8') as my_json:
         json_data = json.load(my_json)
     while True:
         try:
