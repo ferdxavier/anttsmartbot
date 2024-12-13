@@ -1,3 +1,7 @@
+Tratar placa que vem com "-", " "
+Tratar CPF Como número
+Tratar nome vazio
+Subprocesso para exluir lista
 Mandar o número da solicitacao
 Descrever o padrao de Situação
 Descrever o padrao de Tipo de documento

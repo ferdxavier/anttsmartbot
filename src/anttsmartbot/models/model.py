@@ -1,5 +1,4 @@
 import pandas as pd
-#import PyPDF2
 
 class Passageiro:
     id: str

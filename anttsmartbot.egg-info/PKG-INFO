@@ -1,5 +1,6 @@
 Metadata-Version: 2.1
 Name: anttsmartbot
 Version: 1.0.0
+Summary: Robô que digita listas de passageiro na ANTT
 Author: Fernando Xavier
-Author-email: Fernando Xavier de Castro <ferdxavier@gmail.com>
+Author-email: ferd@gmail.com

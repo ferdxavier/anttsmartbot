@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
 
-dir_name_denied = ".denied"
-dir_name_sucess = ".successfullyprocessed"
-allowed_extensions = ['.xls', '.xlsx', '.ods']
+DIR_NAME_DENIED = ".denied"
+DIR_NAME_SUCESS = ".successfullyprocessed"
+ALLOWED_EXTENSIONS = ['.xls', '.xlsx', '.ods']
 
 def exist_file(path):
     if os.path.exists(path):
@@ -33,7 +33,7 @@ def list_files(path):
 def process_denied_extensions(files):
     denied_file = []
     for file in files:
-        if os.path.splitext(file['name'])[1] not in allowed_extensions:
+        if os.path.splitext(file['name'])[1] not in ALLOWED_EXTENSIONS:
             denied_file.append(file)
             
     return denied_file
@@ -52,7 +52,7 @@ def move_files(files, defaul_path, dir_destination):
         os.rename(source, destination)
         
 def move_denied_extensions(files, defaul_path):
-    move_files(files, defaul_path, dir_name_denied)
+    move_files(files, defaul_path, DIR_NAME_DENIED)
 
 def move_processed_allowed_files(files, defaul_path):
-    move_files(files, defaul_path, dir_name_sucess)
+    move_files(files, defaul_path, DIR_NAME_SUCESS)
