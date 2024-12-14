@@ -1,7 +1,7 @@
 import time
 from datetime import datetime
-from models import util
-from processTravelerList import processList
+from .models import util
+from .processTravelerList import processList
 
 EXIT = False
 PATH_LISTAS = '/home/fernando/listas'
@@ -76,3 +76,5 @@ def main():
         except KeyboardInterrupt:
             break
     print("<<<<------------------------------------------------------------>>>>")
+
+main()

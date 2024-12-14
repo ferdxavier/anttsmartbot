@@ -1,7 +1,6 @@
-
 import os, json
-from spy import main
-from processTravelerList import ANTTSMARTBOT_CONFIGS, JSON_AUTH_SITE_FILE_NAME
+from .spy import main
+from .processTravelerList import ANTTSMARTBOT_CONFIGS, JSON_AUTH_SITE_FILE_NAME
 
 DEFAULT_COMPANY = {
     "company": "09511944000106", 
@@ -22,3 +21,6 @@ def init():
     print("++++                      Seja bem vindo!!!                       ++++")
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     main()
+
+if __name__ == '__main__':
+    init()

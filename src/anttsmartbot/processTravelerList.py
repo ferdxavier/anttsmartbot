@@ -1,5 +1,5 @@
-from models import util, model
-from bot import execute
+from .models import util, model
+from .bot import execute
 import json
 import os
 

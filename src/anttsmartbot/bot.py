@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchWindowException, NoSuchElementException, WebDriverException
 from selenium.webdriver.support.ui import Select
-from models import model
+from .models import model
 import time
 import json
 from selenium.webdriver.chrome.options import Options
