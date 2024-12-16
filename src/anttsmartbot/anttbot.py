@@ -1,6 +1,6 @@
 import os, json, sys
 from .spy import main_spy
-from .features import describe_list, remove_list
+from .features import describe_list, remove_list, add_file
 from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, \
                                 JSON_AUTH_SITE_FILE_NAME, JSON_PATH_WORKDIR, \
                                 DEFAULT_WORKDIR, DEFAULT_COMPANY, ID_PAGE
@@ -59,12 +59,14 @@ def init_process():
         if len(sys.argv) == 4:
             placa = sys.argv[2]
             solicitacao = sys.argv[3]
-            if sys.argv[1] =='list':
+            if sys.argv[1] == 'list':
                 describe_list(placa, solicitacao)
-            elif sys.argv[1] =='rm':    
+            elif sys.argv[1] == 'rm':    
                 remove_list(placa, solicitacao)
-            else:
-                print(f'Paramentos inválidos. Tente "anttsmartbot {sys.argv[1]} -help"')
+        elif sys.argv[1] == 'file':
+            add_file(sys.argv[2])
+        else:
+            print(f'Paramentos inválidos. Tente "anttsmartbot {sys.argv[1]} -help"')
 
 if __name__ == "__main__":
     init()

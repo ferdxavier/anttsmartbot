@@ -9,6 +9,50 @@ from .bot import execute_add
 EXIT = False
 TIME_SLEEP_DEFAULT = 2
 
+def process_file(file, path_workdir):
+
+    print("  ;-)")
+    print(f'      Processando o arquivo "{file["name"]}"')
+    data = processList(file["fullpath"])
+    if not data["error"]:
+        traveler_in_file = len(data["traveler_List"].passageiros)
+        print()
+        print(f'        | Placa........: {data["traveler_List"].placa}')
+        print(f'        | Solicicacao..: {data["traveler_List"].num_solicitacao}')
+        print(f'        | {traveler_in_file} passageiro(s) no registro.')
+        print()
+        
+        data = execute_add(data['traveler_List'])
+        if not data['error']:
+            traveler_solicitacao = data["summary"]["traveler_number_in_solicitacao"]
+            traveler_lista = data["summary"]["traveler_number_in_list"]
+            if traveler_in_file == traveler_lista:
+                print(f'        * Arquivo processado com sucesso!')
+            else:
+                print(f'        * Passageiros digitados está diferente da lista. Verifique a lista "{file["fullpath"]}".')
+
+            print(f'        * {traveler_lista} passageiro(s) digitalizado(s).')
+            if traveler_lista != traveler_solicitacao:
+                print(f'        * O número de passageiros no Manifesto é diferente da lista: {traveler_solicitacao} passageiro(s)')
+        else:
+            print(f'        * {data['error']:}')
+            
+        processed_files = []
+        processed_files.append(file)
+        util.move_processed_allowed_files(processed_files, path_workdir)
+        print(f'        * Arquivo movido para "{path_workdir}/{util.DIR_NAME_SUCESS}"')
+        print("")
+        
+    else:
+        print("        # " +data["error"])
+        if data["error"]:
+            processed_files = []
+            processed_files.append(file)
+            util.move_processed_allowed_files(processed_files, path_workdir)
+            print(f'        * Arquivo movido para "{path_workdir}/{util.DIR_NAME_SUCESS}"')
+
+    sleep(1)
+
 def main_process():
     with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR), encoding='utf-8') as my_json:
         json_data = json.load(my_json)
@@ -33,46 +77,10 @@ def main_process():
                 print()
                 print("  Processando as listas:")
                 files =  util.list_files(path_workdir)
+                
                 for file in files:
-                    print("  ;-)")
-                    print(f'      Processando o arquivo "{file["name"]}"')
-                    data = processList(file["fullpath"])
-                    if not data["error"]:
-                        traveler_in_file = len(data["traveler_List"].passageiros)
-                        print()
-                        print(f'        | Placa........: {data["traveler_List"].placa}')
-                        print(f'        | Solicicacao..: {data["traveler_List"].num_solicitacao}')
-                        print(f'        | {traveler_in_file} passageiro(s) no registro.')
-                        print()
-                        
-                        data = execute_add(data['traveler_List'])
+                    process_file(file, path_workdir)
 
-                        traveler_solicitacao = data["summary"]["traveler_number_in_solicitacao"]
-                        traveler_lista = data["summary"]["traveler_number_in_list"]
-                        if traveler_in_file == traveler_lista:
-                            print(f'        * Arquivo processado com sucesso!')
-                        else:
-                            print(f'        * Passageiros digitados está diferente da lista. Verifique a lista "{file["fullpath"]}".')
-
-                        print(f'        * {traveler_lista} passageiro(s) digitalizado(s).')
-                        if traveler_lista != traveler_solicitacao:
-                            print(f'        * O número de passageiros no Manifesto é diferente da lista: {traveler_solicitacao} passageiro(s)')
-                        processed_files = []
-                        processed_files.append(file)
-                        util.move_processed_allowed_files(processed_files, path_workdir)
-                        print(f'        * Arquivo movido para "{path_workdir}/{util.DIR_NAME_SUCESS}"')
-                        print("")
-                        
-                    else:
-                        print("        # " +data["error"])
-                        if data["error"]:
-                            processed_files = []
-                            processed_files.append(file)
-                            util.move_processed_allowed_files(processed_files, path_workdir)
-                            print(f'        * Arquivo movido para "{path_workdir}/{util.DIR_NAME_SUCESS}"')
-
-                        
-                    sleep(1)
         else:
             print('  Nenhum arquivo encontrado!')
         
