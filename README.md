@@ -1,3 +1,4 @@
+Está aparecendo 0 passageiros encotrados antes.
 Tratar placa que vem com "-", " "
 Tratar CPF Como número
 Tratar nome vazio

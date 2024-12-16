@@ -4,7 +4,7 @@ from selenium.webdriver.support.ui import Select
 from .models import model
 from .models.model import Passageiro
 from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, JSON_AUTH_SITE_FILE_NAME
-import json, sys, time
+import json, sys, time, os
 from os.path import join
 from selenium.webdriver.chrome.options import Options
 
@@ -145,6 +145,12 @@ def get_current_page_url(current_page):
     return current_page.current_url
 
 def exit_GUI():
+    if 'DISPLAY' in os.environ:
+        return True
+    else:
+        return False
+
+    """ 
     if sys.platform == 'win32' or sys.platform == 'darwin':
         return True
     elif sys.platform == 'linux':
@@ -154,6 +160,7 @@ def exit_GUI():
             return True
         else:
             return False
+    """
     
 TIME_RECONNECT = 10
 TIME_WAIT_SMALL = 0.02
