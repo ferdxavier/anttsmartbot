@@ -2,7 +2,7 @@ from time import sleep
 from datetime import datetime
 from .tools import util
 from .processTravelerList import processList
-from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR
+from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR, JSON_AUTH_SITE_FILE_NAME
 import json, os
 from .bot import execute_add
 
@@ -17,17 +17,25 @@ def process_file(file, path_workdir):
     if not data["error"]:
         traveler_in_file = len(data["traveler_List"].passageiros)
         print()
-        print(f'        | Placa........: {data["traveler_List"].placa}')
+        print(f'        | Placa........: {str(data["traveler_List"].placa).upper()}')
         print(f'        | Solicicacao..: {data["traveler_List"].num_solicitacao}')
         print(f'        | {traveler_in_file} passageiro(s) no registro.')
         print()
         
+        salve_data = data['traveler_List']
         data = execute_add(data['traveler_List'])
         if not data['error']:
             traveler_solicitacao = data["summary"]["traveler_number_in_solicitacao"]
             traveler_lista = data["summary"]["traveler_number_in_list"]
             if traveler_in_file == traveler_lista:
                 print(f'        * Arquivo processado com sucesso!')
+                with open( os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME), encoding='utf-8') as my_json:
+                    json_data = json.load(my_json)
+                
+                    if not salve_data.placa in json_data["cars"]:
+                        json_data["cars"].append(str(salve_data.placa).upper())
+                        with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME) , "w") as my_json:
+                            json.dump(json_data, my_json, indent=4)
             else:
                 print(f'        * Passageiros digitados está diferente da lista. Verifique a lista "{file["fullpath"]}".')
 

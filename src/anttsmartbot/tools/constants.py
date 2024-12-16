@@ -9,7 +9,7 @@ DEFAULT_COMPANY = {
     "company": "09511944000106", 
     "password": "420662",
     "site": "https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/Inicial.asp",
-    "cars": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"]
+    "cars": []
 }
 
 ID_PAGE = {
@@ -26,5 +26,3 @@ ID_PAGE = {
 DEFAULT_WORKDIR = {
     "workdir": os.path.join(os.path.expanduser("~"), "listas")
 }
-
-ALLOWS_COMMANDS = ["-rm", "", "", "", ""]

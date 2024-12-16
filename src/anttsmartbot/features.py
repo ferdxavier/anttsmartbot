@@ -20,12 +20,11 @@ def load_minimal_infor(placa: str, solicitacao: str):
 
 
 def describe_list(placa: str, solicitacao: str):
-    traveler_list = load_minimal_infor(placa, solicitacao)
+    traveler_list = load_minimal_infor(placa.upper(), solicitacao)
     if traveler_list:
         date = execute_list(traveler_list)
         print()
-        print(f'   | Placa........: {traveler_list.placa}')
-        print(f'   | Solicicacao..: {traveler_list.num_solicitacao}')
+        print(f'   | Solicicacao..: {str(traveler_list.placa).upper()}')
         print(f'   | {len(traveler_list.passageiros)} passageiro(s) encontrados.')
         print()
         if not date['error']:
@@ -40,10 +39,10 @@ def describe_list(placa: str, solicitacao: str):
 
 
 def remove_list(placa: str, solicitacao: str):
-    traveler_list = load_minimal_infor(placa, solicitacao)
+    traveler_list = load_minimal_infor(placa.upper(), solicitacao)
     if traveler_list:
         print()
-        print(f'   | Placa........: {traveler_list.placa}')
+        print(f'   | Placa........: {str(traveler_list.placa).upper()}')
         print(f'   | Solicicacao..: {traveler_list.num_solicitacao}')
         print(f'   | {len(traveler_list.passageiros)} passageiro(s) encontrados.')
         print()

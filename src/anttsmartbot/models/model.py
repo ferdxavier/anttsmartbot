@@ -94,7 +94,7 @@ def load_file(dataframe):
     lista = ListaViagem()
     lista.passageiros = []
     try:
-        lista.placa = str(dataframe.iloc[0, 2]).strip()
+        lista.placa = str(dataframe.iloc[0, 2]).upper().strip()
         lista.tipo_viagem = str(dataframe.iloc[1, 2]).strip()
         if lista.tipo_viagem not in TIPO_VIAGEM:
             return {"error": "Verifique o tipo da viagem. (NORMAL OU ATIPICA)", "traveler_List": None}

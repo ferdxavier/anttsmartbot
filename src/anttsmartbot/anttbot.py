@@ -26,7 +26,6 @@ def init():
         if not os.path.exists(path_workdir):
             os.mkdir(path_workdir)
 
-
     print()
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("++++                      Seja bem vindo!!!                       ++++")
@@ -41,31 +40,35 @@ def init_describe_list():
 
 def find_options(parametro):
     match parametro:
-        case 'rm':
-            return 'Comando inválido! Tente: "anttsmartbot rm [placa] [solicitação]"'
+        case 'remove':
+            return 'Comando inválido! Tente: "anttsmartbot remove [placa] [solicitação]"'
         case 'list':
             return 'Comando inválido! Tente: "anttsmartbot list [placa] [solicitação]"'
         case 'file':
             return 'Comando inválido! Tente: "anttsmartbot file [caminho do arquivo]"'
         case _:
-            return 'Comando inválido! Tente: "anttsmartbot" ou "anttsmartbot [rm|list|file]"'
+            return 'Comando inválido! Tente: "anttsmartbot [find|remove|list|file]"'
 
 
 def init_process():
     if len(sys.argv) == 1:
-        main_spy()
+        print(f'Comando inválido! Tente: "anttsmartbot [find|list|remove|file|]"')
     else:
         if len(sys.argv) == 2:
-            print(find_options(sys.argv[1]))
-        if len(sys.argv) == 4:
+            if sys.argv[1] == 'find':
+                main_spy()
+            else:
+                print(find_options(sys.argv[1]))
+        elif len(sys.argv) == 3:
+            if sys.argv[1] == 'file':
+                add_file(sys.argv[2])
+        elif len(sys.argv) == 4:
             placa = sys.argv[2]
             solicitacao = sys.argv[3]
             if sys.argv[1] == 'list':
                 describe_list(placa, solicitacao)
-            elif sys.argv[1] == 'rm':    
+            elif sys.argv[1] == 'remove':    
                 remove_list(placa, solicitacao)
-        elif sys.argv[1] == 'file':
-            add_file(sys.argv[2])
         else:
             print(f'Paramentos inválidos. Tente "anttsmartbot {sys.argv[1]} -help"')
 
