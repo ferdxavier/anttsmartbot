@@ -4,8 +4,7 @@ from selenium.webdriver.support.ui import Select
 from .models import model
 from .models.model import Passageiro
 from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, JSON_AUTH_SITE_FILE_NAME
-import time
-import json
+import json, sys, time
 from os.path import join
 from selenium.webdriver.chrome.options import Options
 
@@ -144,6 +143,17 @@ def is_page_valid_by_xpath(current_page, xpath, value):
     
 def get_current_page_url(current_page):
     return current_page.current_url
+
+def exit_GUI():
+    if sys.platform == 'win32' or sys.platform == 'darwin':
+        return True
+    elif sys.platform == 'linux':
+        # Verificar se X11 está instalado
+        import subprocess
+        if subprocess.run(['which', 'Xorg']).returncode == 0:
+            return True
+        else:
+            return False
     
 TIME_RECONNECT = 10
 TIME_WAIT_SMALL = 0.02
@@ -160,10 +170,11 @@ def execute_add(traveler_List: model.ListaViagem):
         try:
             # Carrega o webdriver ChromeDriver e abre a página
             # Navegador leadless
-            #current_page = webdriver.Chrome(OPTIONS)
+            current_page = webdriver.Chrome(OPTIONS)
             
-            # Navegado comum com GUI (debug)
-            current_page = webdriver.Chrome()
+            if exit_GUI():
+                # Navegado comum com GUI (debug)
+                current_page = webdriver.Chrome()
             
             current_page.get(traveler_List.site)
             #print(f'______________________home_page == {get_current_page_url(current_page)}')
@@ -279,10 +290,11 @@ def execute_list(traveler_List: model.ListaViagem):
         try:
             # Carrega o webdriver ChromeDriver e abre a página
             # Navegador leadless
-            #current_page = webdriver.Chrome(OPTIONS)
+            current_page = webdriver.Chrome(OPTIONS)
             
-            # Navegado comum com GUI (debug)
-            current_page = webdriver.Chrome()
+            if exit_GUI():
+                # Navegado comum com GUI (debug)
+                current_page = webdriver.Chrome()
             
             current_page.get(traveler_List.site)
             #print(f'______________________home_page == {get_current_page_url(current_page)}')
@@ -403,10 +415,11 @@ def execute_remove(traveler_List: model.ListaViagem):
         try:
             # Carrega o webdriver ChromeDriver e abre a página
             # Navegador leadless
-            #current_page = webdriver.Chrome(OPTIONS)
+            current_page = webdriver.Chrome(OPTIONS)
             
-            # Navegado comum com GUI (debug)
-            current_page = webdriver.Chrome()
+            if exit_GUI():
+                # Navegado comum com GUI (debug)
+                current_page = webdriver.Chrome()
             
             current_page.get(traveler_List.site)
             #print(f'______________________home_page == {get_current_page_url(current_page)}')

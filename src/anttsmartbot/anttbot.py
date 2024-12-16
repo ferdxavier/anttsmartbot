@@ -31,6 +31,7 @@ def init():
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     print("++++                      Seja bem vindo!!!                       ++++")
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    init_process()
 
 def init_remove_list():
     print("Remover a lista.")
@@ -70,4 +71,3 @@ def init_process():
 
 if __name__ == "__main__":
     init()
-    init_process()
