@@ -42,4 +42,4 @@ def remove_list(placa: str, solicitacao: str):
     if traveler_list:
         print("Implementar esvaziar lista")
     else:
-        print(f'Ocorreu um erro ao abrir o arquivo "{os.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')
+        print(f'Ocorreu um erro ao abrir o arquivo "{join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')
