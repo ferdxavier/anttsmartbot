@@ -1,30 +1,27 @@
-from .models import util, model
-from .bot import execute
+from .tools import util
+from .models import model
 import json
-import os
-
-ANTTSMARTBOT_CONFIGS = main_folder = os.path.join(os.path.expanduser("~"), ".anttsmartbot")
-JSON_AUTH_SITE_FILE_NAME = "json_auth_site.json"
+from os.path import join
+from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME
 
 def processList(path_traveler_list):
     check_file = util.exist_file(path_traveler_list)
     if check_file['exist']:
         data = model.load_traveler_List(path_traveler_list)
         if not data["error"]:
-            with open(os.path.join(ANTTSMARTBOT_CONFIGS, JSON_AUTH_SITE_FILE_NAME), encoding='utf-8') as my_json:
+            with open( join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME), encoding='utf-8') as my_json:
                 json_data = json.load(my_json)
-                
-            traveler_List = data["traveler_List"]
-            traveler_List.cnpj = json_data["company"]
-            traveler_List.senha = json_data["password"]
-            traveler_List.site = json_data["site"]
+
+            data["traveler_List"].cnpj = json_data["company"]
+            data["traveler_List"].senha = json_data["password"]
+            data["traveler_List"].site = json_data["site"]
             
-            data = execute(traveler_List)
+            #data = execute(traveler_List)
             
-            data_ptl = data
-            data_ptl["traveler_List"] = traveler_List
+            #data_ptl = data
+            #data_ptl["traveler_List"] = traveler_List
             
-            return data_ptl
+            return data
         else:
             return {"error": data["error"], "traveler_List": None}
             

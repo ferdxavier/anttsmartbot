@@ -1,6 +1,7 @@
 Tratar placa que vem com "-", " "
 Tratar CPF Como número
 Tratar nome vazio
+Validar quando dados de login estiverem invalidos
 Subprocesso para exluir lista
 Mandar o número da solicitacao
 Descrever o padrao de Situação

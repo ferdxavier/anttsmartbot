@@ -1,3 +1,2 @@
-webdriver
-anttsmartbot.egg-info
-dist
+anttsmartbot.egg-info/
+dist/
