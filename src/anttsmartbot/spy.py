@@ -29,6 +29,11 @@ def process_file(file, path_workdir):
             traveler_lista = data["summary"]["traveler_number_in_list"]
             if traveler_in_file == traveler_lista:
                 print(f'        * Arquivo processado com sucesso!')
+                processed_files = []
+                processed_files.append(file)
+                util.move_processed_allowed_files(processed_files, path_workdir)
+                print(f'        * Arquivo movido para "{path_workdir}/{util.DIR_NAME_SUCESS}"')
+                print("")
                 with open( os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME), encoding='utf-8') as my_json:
                     json_data = json.load(my_json)
                 
@@ -44,20 +49,14 @@ def process_file(file, path_workdir):
                 print(f'        * O número de passageiros no Manifesto é diferente da lista: {traveler_solicitacao} passageiro(s)')
         else:
             print(f'        * {data['error']:}')
-            
-        processed_files = []
-        processed_files.append(file)
-        util.move_processed_allowed_files(processed_files, path_workdir)
-        print(f'        * Arquivo movido para "{path_workdir}/{util.DIR_NAME_SUCESS}"')
-        print("")
         
     else:
         print("        # " +data["error"])
-        if data["error"]:
-            processed_files = []
-            processed_files.append(file)
-            util.move_processed_allowed_files(processed_files, path_workdir)
-            print(f'        * Arquivo movido para "{path_workdir}/{util.DIR_NAME_SUCESS}"')
+        #if data["error"]:
+         #   processed_files = []
+          #  processed_files.append(file)
+           # util.move_processed_allowed_files(processed_files, path_workdir)
+            #print(f'        * Arquivo movido para "{path_workdir}/{util.DIR_NAME_SUCESS}"')
 
     sleep(1)
 

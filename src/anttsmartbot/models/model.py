@@ -129,7 +129,7 @@ def load_travelers(dataframe, lista):
             if not result:
                 lista.passageiros.append(passageiro)
             else:
-                return {"error": f'Passeiro número {r + 1} está duplicado: {result}', "traveler_List": lista}
+                return {"error": f'Passeiro número {r + 1} está duplicado: {passageiro.id} - {passageiro.nome}', "traveler_List": lista}
         else:
             return {"error": f'Erro encontrado no passageiro número {r + 1}: {result}', "traveler_List": lista}
            
