@@ -94,7 +94,7 @@ def load_file(dataframe):
     lista = ListaViagem()
     lista.passageiros = []
     try:
-        lista.placa = str(dataframe.iloc[0, 2]).upper().strip()
+        lista.placa = str(dataframe.iloc[0, 2]).upper().strip().replace("-", "").replace(" ", "").replace(".", "").replace("--", "").replace("  ", "")
         lista.tipo_viagem = str(dataframe.iloc[1, 2]).strip()
         if lista.tipo_viagem not in TIPO_VIAGEM:
             return {"error": "Verifique o tipo da viagem. (NORMAL OU ATIPICA)", "traveler_List": None}
@@ -102,7 +102,14 @@ def load_file(dataframe):
         return load_travelers(dataframe, lista)
     except IndexError:
         return {"error": "Verifique o cabeçalho do arquivo. (placa, Tipo da Viagem ou número da solicitação)", "traveler_List": None}
-    
+
+def is_list_file(passageiros, passeiro_for_add: Passageiro):
+    pass_primary_key_add = str(passeiro_for_add.nome + passeiro_for_add.numero_doc + passeiro_for_add.orgao).upper()
+    for passageiro in passageiros:
+        pass_primary_key_list = str(passageiro.nome + passageiro.numero_doc + passageiro.orgao).upper()
+        if pass_primary_key_add == pass_primary_key_list:
+            return True
+    return False
     
 def load_travelers(dataframe, lista):
     rows = dataframe[6:]
@@ -118,7 +125,11 @@ def load_travelers(dataframe, lista):
         passageiro.telefone = str(rows.iloc[r, 7]).strip()
         result = isValidPassageiro(passageiro)
         if not result:
-            lista.passageiros.append(passageiro)
+            result = is_list_file(lista.passageiros, passageiro)
+            if not result:
+                lista.passageiros.append(passageiro)
+            else:
+                return {"error": f'Passeiro número {r + 1} está duplicado: {result}', "traveler_List": lista}
         else:
             return {"error": f'Erro encontrado no passageiro número {r + 1}: {result}', "traveler_List": lista}
            
@@ -157,9 +168,9 @@ def isValidPassageiro(passageiro: Passageiro):
     if len(passageiro.orgao) < 2 or passageiro.orgao == 'nan':
         return "Órgão é inválido."
     if not passageiro.situacao in SITUACAO:
-        return f'A situação do passageiro é inválida. ({passageiro.situacao})'
+        return f'A situação do passageiro é inválida: ({passageiro.situacao}). Opções: {SITUACAO}'
     if not passageiro.tipo_doc in TIPO_DOCUMENTO[passageiro.situacao]:
-        return f'O tipo de documento é inválido. ({passageiro.tipo_doc})'
+        return f'O tipo de documento é inválido: ({passageiro.tipo_doc}). Opções: {TIPO_DOCUMENTO[passageiro.situacao]}'
     if str(passageiro.crianca_colo).upper() == "SIM" and str(passageiro.situacao).upper() != str(SITUACAO[2]).upper():
         return f'O campo SITUAÇÃO deve ser informado como "{SITUACAO[2]}" para Criança de Colo.'
     

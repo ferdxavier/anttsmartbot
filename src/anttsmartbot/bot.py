@@ -50,7 +50,7 @@ def set_passageiro(current_page, passageiro):
     current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[10]/td[2]/input').send_keys(passageiro.orgao)
             
                 
-def exit_traveler(current_page, passageiro):
+def exist_traveler(current_page, passageiro):
     primary_key_down = str(str(passageiro.nome).strip() + str(passageiro.numero_doc).strip() + str(passageiro.orgao).strip()).upper()
     index = 2
     while True:
@@ -264,7 +264,7 @@ def execute_add(traveler_List: model.ListaViagem):
             existing_traveler = []
     
             for passageiro in traveler_List.passageiros:
-                if not exit_traveler(current_page, passageiro):
+                if not exist_traveler(current_page, passageiro):
                     set_passageiro(current_page, passageiro)
                     find_element_by_xpath(current_page, '//*[@id="btnInc"]').click()
 
