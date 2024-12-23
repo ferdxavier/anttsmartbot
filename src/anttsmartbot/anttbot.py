@@ -1,6 +1,6 @@
 import os, json, sys
 from .spy import main_spy
-from .features import describe_list, remove_list, add_file
+from .features import describe_list, remove_list, add_file, find_manifest
 from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, \
                                 JSON_AUTH_SITE_FILE_NAME, JSON_PATH_WORKDIR, \
                                 DEFAULT_WORKDIR, DEFAULT_COMPANY, ID_PAGE
@@ -62,6 +62,8 @@ def init_process():
         elif len(sys.argv) == 3:
             if sys.argv[1] == 'file':
                 add_file(sys.argv[2])
+            if sys.argv[1] == 'manifest':
+                find_manifest(sys.argv[2])
         elif len(sys.argv) == 4:
             placa = sys.argv[2]
             solicitacao = sys.argv[3]

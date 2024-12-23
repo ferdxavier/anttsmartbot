@@ -119,6 +119,10 @@ def load_travelers(dataframe, lista):
         passageiro.nome = str(rows.iloc[r, 1]).strip()
         passageiro.numero_doc = str(rows.iloc[r, 2])
         passageiro.tipo_doc = str(rows.iloc[r, 3]).strip()
+       # if passageiro.tipo_doc.upper() == "CPF":
+       #     cpf_temp = passageiro.numero_doc.replace("-", "").replace(".", "")
+       #     cpf = cpf_temp[:3] + "." + cpf_temp[3:6] + "." + cpf_temp[6:9] + "-" + cpf_temp[9:]
+       
         passageiro.orgao = str(rows.iloc[r, 4]).strip()
         passageiro.situacao = str(rows.iloc[r, 5]).strip()
         passageiro.crianca_colo = str(rows.iloc[r, 6]).strip()

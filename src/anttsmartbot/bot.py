@@ -150,17 +150,6 @@ def exit_GUI():
     else:
         return False
 
-    """ 
-    if sys.platform == 'win32' or sys.platform == 'darwin':
-        return True
-    elif sys.platform == 'linux':
-        # Verificar se X11 está instalado
-        import subprocess
-        if subprocess.run(['which', 'Xorg']).returncode == 0:
-            return True
-        else:
-            return False
-    """
     
 TIME_RECONNECT = 10
 TIME_WAIT_SMALL = 0.02
@@ -169,6 +158,22 @@ TRY_MANIFEST_PAGE = 5
 TIME_TRY_MANIFEST_PAGE = 0.4
 MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solicitacao1.asp?cmdOpcao=Consultar&txtNumeroSolicitacao='
 PATH_WEBDRIVER = "../../webdriver/chromedriver"
+LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
+
+def find_login_errors(current_page):
+    xpath1 = "/html/body/p[1]/b"
+    xpath2 = "/html/body/font"
+    
+    if exist_element(current_page,xpath1):
+        if find_element_by_xpath(current_page,xpath1).text == LOGIN_ERROR_MESSAGES[0]:
+            return "Verifique a senha."
+        elif find_element_by_xpath(current_page,xpath1).text == LOGIN_ERROR_MESSAGES[1]:
+            return "Veículo não habilitado."
+    
+    if exist_element(current_page,xpath2):
+        if find_element_by_xpath(current_page,xpath2).text in LOGIN_ERROR_MESSAGES:
+            return "CNPJ não habilitado"
+    return None
 
 def execute_add(traveler_List: model.ListaViagem):
     with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
@@ -198,6 +203,11 @@ def execute_add(traveler_List: model.ListaViagem):
                 raise PageNotFoundExcept("Page not found: ")
             new_page = current_page.window_handles[len(current_page.window_handles) - 1]
             current_page.switch_to.window(new_page)
+
+            error = find_login_errors(current_page)
+            if error:
+                return {"error": error, "summary": None} 
+            
             #print(f'______________request_trip_page == {get_current_page_url(current_page)}')
             
             # Redireciona para um tipo de viajem
@@ -318,6 +328,11 @@ def execute_list(traveler_List: model.ListaViagem):
                 raise PageNotFoundExcept("Page not found: ")
             new_page = current_page.window_handles[len(current_page.window_handles) - 1]
             current_page.switch_to.window(new_page)
+
+            error = find_login_errors(current_page)
+            print(error)
+            if error:
+                return {"error": error, "summary": None} 
             #print(f'______________request_trip_page == {get_current_page_url(current_page)}')
             
             # Redireciona para um tipo de viajem
@@ -443,24 +458,17 @@ def execute_remove(traveler_List: model.ListaViagem):
                 raise PageNotFoundExcept("Page not found: ")
             new_page = current_page.window_handles[len(current_page.window_handles) - 1]
             current_page.switch_to.window(new_page)
+
+            error = find_login_errors(current_page)
+            print(error)
+            if error:
+                return {"error": error, "summary": None} 
             #print(f'______________request_trip_page == {get_current_page_url(current_page)}')
             
             # Redireciona para um tipo de viajem
             path_button_avancar = '//*[@id="AutoNumber2"]/tbody/tr[43]/td[2]/input[2]'
             find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[8]/td[2]/a').click()
-            """
-            if traveler_List.tipo_viagem == 'NORMAL':
-                find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[8]/td[2]/a').click()
-            else:
-                find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[6]/td[2]/dd/a').click()
-                #print(f'__available_travel_options_page == {get_current_page_url(current_page)}')
-                if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/font/b', json_data["available_travel_options_page"]):
-                    return {"error": f'A página não foi encontrada! Local: available_travel_options_page', "summary": None} 
-                find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[5]/td[4]/input').click()
-                path_button_avancar = '//*[@id="AutoNumber2"]/tbody/tr[45]/td[2]/input[2]'
-                 
-            #print(f'______________request_list_page == {get_current_page_url(current_page)}')
-            """
+
             if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/h4', json_data["request_list_page"]):
                 return {"error": f'A página não foi encontrada! Local: request_list_page', "summary": None} 
                
@@ -521,3 +529,7 @@ def execute_remove(traveler_List: model.ListaViagem):
             time.sleep(TIME_RECONNECT)
         except KeyboardInterrupt:
             break
+
+def execute_find_manifest(traveler_List):
+    # Prever viagem Normal e Anormal
+    pass

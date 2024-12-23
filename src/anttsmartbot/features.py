@@ -1,7 +1,7 @@
 from .models.model import ListaViagem
 from .tools import util
 from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME, JSON_PATH_WORKDIR
-from .bot import execute_list, execute_remove
+from .bot import execute_list, execute_remove, execute_find_manifest
 from .spy import process_file
 from os.path import join
 import json
@@ -22,18 +22,18 @@ def load_minimal_infor(placa: str, solicitacao: str):
 def describe_list(placa: str, solicitacao: str):
     traveler_list = load_minimal_infor(placa.upper(), solicitacao)
     if traveler_list:
-        date = execute_list(traveler_list)
+        data = execute_list(traveler_list)
         print()
-        print(f'   | Solicicacao..: {str(traveler_list.placa).upper()}')
+        print(f'   | Solicicação..: {str(traveler_list.placa).upper()}')
         print(f'   | {len(traveler_list.passageiros)} passageiro(s) encontrados.')
         print()
-        if not date['error']:
+        if not data['error']:
             id = 1
             for traveler in traveler_list.passageiros:
                 print(f' {id:3} {traveler.nome:40} {traveler.numero_doc:20} {traveler.orgao:10}')
                 id += 1
         else:
-            print(f'   * {date['error']}')
+            print(f'   * {data['error']}')
     else:
         print(f'   Ocorreu um erro ao abrir o arquivo "{join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')
 
@@ -43,11 +43,11 @@ def remove_list(placa: str, solicitacao: str):
     if traveler_list:
         print()
         print(f'   | Placa........: {str(traveler_list.placa).upper()}')
-        print(f'   | Solicicacao..: {traveler_list.num_solicitacao}')
+        print(f'   | Solicicação..: {traveler_list.num_solicitacao}')
         print(f'   | {len(traveler_list.passageiros)} passageiro(s) encontrados.')
         print()
-        date = execute_remove(traveler_list)
-        if not date['error']:
+        data = execute_remove(traveler_list)
+        if not data['error']:
             print(f'   Passageiros excluidos com sucesso!')
     else:
         print(f'Ocorreu um erro ao abrir o arquivo "{join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')
@@ -64,3 +64,15 @@ def add_file(path: str):
             process_file({"name": name_file, "fullpath": path}, path_workdir)
     else:    
         print(check_file['message'])
+
+def find_manifest(placa: str):
+    traveler_list = load_minimal_infor(placa.upper(), "0000000000")
+    if traveler_list:
+        print()
+        print(f'   | Placa...................: {str(traveler_list.placa).upper()}')
+        data = execute_find_manifest(traveler_list)
+        if not data['error']:
+            print(f'   | Solicicações pendentes..: {data['manifests']}')
+        print()
+    else:
+        print(f'Ocorreu um erro ao abrir o arquivo "{join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')

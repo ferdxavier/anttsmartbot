@@ -16,7 +16,7 @@ def list_files(path):
         path = path + '/'
         
     try:
-        dirs = os.listdir(path)
+        dirs = os.listdir(path).sort()
     except NotADirectoryError:
         return []
     except FileNotFoundError:
