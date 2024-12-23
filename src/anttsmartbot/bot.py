@@ -530,6 +530,80 @@ def execute_remove(traveler_List: model.ListaViagem):
         except KeyboardInterrupt:
             break
 
+def find_manifests(current_page, tipo_viagem):
+ 
+    manifests = []
+    for x in range(2, 12):
+        solicitacao = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[2]').text
+        status = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[3]').text                                 
+        if str(status).upper() == "PENDENTE":
+            manifests.append({"solicitacao": solicitacao, "tipo_viagem": tipo_viagem})
+
+    return manifests
+
 def execute_find_manifest(traveler_List):
-    # Prever viagem Normal e Anormal
-    pass
+    with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
+        json_data = json.load(my_json)
+    while True:
+        try:
+            # Carrega o webdriver ChromeDriver e abre a página
+            # Navegador leadless
+            current_page = webdriver.Chrome(OPTIONS)
+            
+            if exit_GUI():
+                # Navegado comum com GUI (debug)
+                current_page = webdriver.Chrome()
+            
+            current_page.get(traveler_List.site)
+            #print(f'______________________home_page == {get_current_page_url(current_page)}')
+            if not is_page_valid_by_xpath(current_page, '/html/body/table[2]/tbody/tr[2]/td[2]/table/tbody/tr[1]/td/i/b/font', json_data["home_page"]):
+                return {"error": f'A página "{traveler_List.site}" não foi encontrada!', "summary": None} 
+            
+            # Preenche o form para fazer o login e submet o formulário. E checa se a página aberta é válida e muda para ela
+            find_element_by_xpath(current_page, '/html/body/div[2]/form/table[1]/tbody/tr[1]/td[3]/input').send_keys(traveler_List.cnpj)
+            find_element_by_xpath(current_page, '/html/body/div[2]/form/table[1]/tbody/tr[2]/td[3]/input').send_keys(traveler_List.placa)
+            find_element_by_xpath(current_page, '/html/body/div[2]/form/table[1]/tbody/tr[3]/td[3]/input').send_keys(traveler_List.senha)
+            find_element_by_xpath(current_page, '//*[@id="btnEntrar"]').click()
+            
+            if not is_page_valid_by_xpath(current_page, '/html/body/table[2]/tbody/tr[2]/td[2]/table/tbody/tr[1]/td/i/b/font', json_data["request_trip_page"]):
+                raise PageNotFoundExcept("Page not found: ")
+            new_page = current_page.window_handles[len(current_page.window_handles) - 1]
+            current_page.switch_to.window(new_page)
+
+            error = find_login_errors(current_page)
+            if error:
+                return {"error": error, "summary": None} 
+            
+            #print(f'______________request_trip_page == {get_current_page_url(current_page)}')
+            
+            # Redireciona para um tipo de viajem
+            find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[8]/td[2]/a').click()
+            if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/h4', json_data["request_list_page"]):
+                return {"error": f'A página não foi encontrada! Local: request_list_page', "summary": None}
+            manifests = find_manifests(current_page, "NORMAL")
+            
+            find_element_by_xpath(current_page, '//*[@id="AutoNumber2"]/tbody/tr/td[1]/input').click()
+            if not is_page_valid_by_xpath(current_page, '/html/body/table[2]/tbody/tr[2]/td[2]/table/tbody/tr[1]/td/i/b/font', json_data["request_trip_page"]):
+                raise PageNotFoundExcept("Page not found: ")
+            
+            find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[6]/td[2]/dd/a').click()
+            #print(f'__available_travel_options_page == {get_current_page_url(current_page)}')
+            if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/font/b', json_data["available_travel_options_page"]):
+                return {"error": f'A página não foi encontrada! Local: available_travel_options_page', "summary": None} 
+            find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[5]/td[4]/input').click()
+
+            manifests += find_manifests(current_page, "ATIPICA")
+            #current_page.close()
+            return {"error": None, "manifests": manifests}
+        
+        except PageNotFoundExcept:
+            print("Erro 1")
+            time.sleep(TIME_RECONNECT)
+        except NumberOffortExceeded:
+            print("Erro 2")
+            time.sleep(TIME_RECONNECT) 
+        except WebDriverException:
+            print("Erro 3")
+            time.sleep(TIME_RECONNECT)
+        except KeyboardInterrupt:
+            break

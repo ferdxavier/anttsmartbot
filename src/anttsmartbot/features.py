@@ -72,7 +72,13 @@ def find_manifest(placa: str):
         print(f'   | Placa...................: {str(traveler_list.placa).upper()}')
         data = execute_find_manifest(traveler_list)
         if not data['error']:
-            print(f'   | Solicicações pendentes..: {data['manifests']}')
+            ctrl = True
+            for manifest in data['manifests']:
+                if ctrl:
+                    print(f'   | Solicicações pendentes..: {manifest['solicitacao']} ({manifest['tipo_viagem']})')
+                    ctrl = False
+                else:
+                    print(f'                             : {manifest['solicitacao']} ({manifest['tipo_viagem']})')
         print()
     else:
         print(f'Ocorreu um erro ao abrir o arquivo "{join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')
