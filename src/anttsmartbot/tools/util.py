@@ -14,9 +14,8 @@ def exist_file(path):
 def list_files(path):
     if path[len(path) - 1] != "/":
         path = path + '/'
-        
     try:
-        dirs = os.listdir(path).sort()
+        dirs = sorted(os.listdir(path))
     except NotADirectoryError:
         return []
     except FileNotFoundError:

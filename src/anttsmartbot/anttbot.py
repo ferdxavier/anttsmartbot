@@ -47,12 +47,12 @@ def find_options(parametro):
         case 'file':
             return 'Comando inválido! Tente: "anttsmartbot file [caminho do arquivo]"'
         case _:
-            return 'Comando inválido! Tente: "anttsmartbot [find|remove|list|file]"'
+            return 'Comando inválido! Tente: "anttsmartbot [find|remove|list|file|manifest]"'
 
 
 def init_process():
     if len(sys.argv) == 1:
-        print(f'Comando inválido! Tente: "anttsmartbot [find|list|remove|file|]"')
+        print(f'Comando inválido! Tente: "anttsmartbot [find|list|remove|file|manifest]"')
     else:
         if len(sys.argv) == 2:
             if sys.argv[1] == 'find':

@@ -8,9 +8,10 @@
 * Validar quando dados de login estiverem invalidos
 * Executar lista em ordem crescente
 * Mandar o número da solicitacao
-Está aparecendo 0 passageiros encotrados antes.
+* Conciderar tipo de documento maiusculo e minusculo
+* Não está fechando a pagina inicial
+Está aparecendo 0 passageiros encontrados antes.
 Tratar CPF Como número
 Tratar nome vazio
 observacao: O número deve ficar a esquerda e como str. Descobrir como o campo deve sempre ser str
-Não está fechando a pagina inicial
 Quando erra passa para outra lista

@@ -30,8 +30,9 @@ def describe_list(placa: str, solicitacao: str):
         if not data['error']:
             id = 1
             for traveler in traveler_list.passageiros:
-                print(f' {id:3} {traveler.nome:40} {traveler.numero_doc:20} {traveler.orgao:10}')
+                print(f' {id:3} {traveler.nome:45} {traveler.numero_doc:30} {traveler.orgao:15}')
                 id += 1
+            print()
         else:
             print(f'   * {data['error']}')
     else:
