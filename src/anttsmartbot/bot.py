@@ -3,7 +3,7 @@ from selenium.common.exceptions import NoSuchWindowException, NoSuchElementExcep
 from selenium.webdriver.support.ui import Select
 from .models import model
 from .models.model import Passageiro
-from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, JSON_AUTH_SITE_FILE_NAME
+from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE
 import json, sys, time, os
 from os.path import join
 from selenium.webdriver.chrome.options import Options

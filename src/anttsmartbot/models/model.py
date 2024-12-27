@@ -179,22 +179,3 @@ def isValidPassageiro(passageiro: Passageiro):
         return f'O campo SITUAÇÃO deve ser informado como "{SITUACAO[2]}" para Criança de Colo.'
     
     return None
-"""
-def load_traveler_List_PDF_normal(str):
-    pdf_file = open(str, 'rb')
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
-    num_pages = len(pdf_reader.pages)
-    texto = ''
-    for page in range(num_pages):
-        
-        page_obj = pdf_reader.pages[page]
-        print(page_obj.extract_text())
-        print()
-        texto += page_obj.extract_text()
-    pdf_file.close()
-    
-def load_traveler_List_PDF_dig(str):
-    pass
-"""
-
-#load_traveler_List_PDF_normal('/home/fernando/listas/listateste2.pdf')

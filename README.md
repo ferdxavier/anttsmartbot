@@ -10,8 +10,8 @@
 * Mandar o número da solicitacao
 * Conciderar tipo de documento maiusculo e minusculo
 * Não está fechando a pagina inicial
-Está aparecendo 0 passageiros encontrados antes.
+* Tratar nome vazio
+* Está aparecendo 0 passageiros encontrados antes.
 Tratar CPF Como número
-Tratar nome vazio
 observacao: O número deve ficar a esquerda e como str. Descobrir como o campo deve sempre ser str
 Quando erra passa para outra lista
