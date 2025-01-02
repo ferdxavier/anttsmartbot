@@ -14,6 +14,7 @@ OPTIONS.add_argument("--headless")
 OPTIONS.add_argument("--disable-gpu")
 OPTIONS.add_argument("--no-sandbox")
 
+# Constantes utilizadas na execução do fluxo
 TIME_RECONNECT = 10
 TIME_WAIT_SMALL = 0.02
 NUM_ATTEMPTS_TO_ACESS_ELEMENT = 35
@@ -24,19 +25,20 @@ MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solic
 PATH_WEBDRIVER = "../../webdriver/chromedriver"
 LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
 
+# Tenta clicar em um elemente até que consiga
 def local_click(action):
-    flag = True
-    while flag:
+    while True:
         try:
             action.click()
-            flag = False
+            break
         except NoSuchWindowException:
             time.sleep(TIME_WAIT_ANOTHER_CLICK)
         except NoSuchElementException:
             time.sleep(TIME_WAIT_ANOTHER_CLICK)
 
-def set_passageiro(current_page, passageiro):
-    time.sleep(0.05)
+# Preenche o formulário com os dados do passageiro
+def set_traveler_in_form(current_page, passageiro):
+    time.sleep(0.03)
     current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input').send_keys(passageiro.nome)
     current_page.find_element("xpath", '//*[@id="telefone"]').send_keys(passageiro.telefone)
     combobox_select(current_page.find_element("xpath", '//*[@id="cmbMotivoViagem"]'), passageiro.situacao)
@@ -57,7 +59,8 @@ def set_passageiro(current_page, passageiro):
     combobox_select(current_page.find_element("xpath", f'//*[@id="cmbTipoDocumento{xpath_select_tipo_doc}"]'), passageiro.tipo_doc)
     current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[9]/td[2]/input').send_keys(passageiro.numero_doc)
     current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[10]/td[2]/input').send_keys(passageiro.orgao)
-                 
+
+# Procura pelo passageiro antes de salvar                 
 def exist_traveler(current_page, passageiro):
     primary_key_down = str(str(passageiro.nome).strip() + str(passageiro.numero_doc).strip() + str(passageiro.orgao).strip()).upper()
     index = 2
@@ -69,10 +72,11 @@ def exist_traveler(current_page, passageiro):
             primary_key_up = str(nome + numero_doc + orgao).upper()
             if primary_key_down == primary_key_up:
                 return True 
-            index = index + 1
+            index += 1
         except NoSuchElementException:
             return False  
 
+# Carrega um array com todos os passageiros digitados
 def find_travelers(current_page):
     index = 2
     passageiros = []
@@ -88,19 +92,21 @@ def find_travelers(current_page):
             passageiro.orgao = orgao
 
             passageiros.append(passageiro)
-            index = index + 1
+            index += 1
         except NoSuchElementException:
             return passageiros
 
+# Calcula o número de passageiros que já foram digitados
 def traveler_number_in_list_exec(current_page):
     index = 2
     while True:
         try:
             current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{index}]/td[2]')
-            index = index + 1
+            index += 1
         except NoSuchElementException:
             return index - 2
-        
+
+# Seta a opção de tipo de documento no formulário        
 def combobox_select(element, value):
     if value and len(value) > 0 and value != 'nan':
         # Criar um objeto Select para interagir com o combobox
@@ -108,6 +114,7 @@ def combobox_select(element, value):
         # Selecionar a opção pelo texto visível
         select_object.select_by_visible_text(value)
 
+# Verifica a existência de um elemento na página
 def exist_element(current_page, xpath):
     try:
         current_page.find_element("xpath", xpath)
@@ -122,6 +129,7 @@ class NumberOffortExceeded(Exception):
 class PageNotFoundExcept(Exception):
     pass
 
+# Procura elemento na página por várias vezes ou até esgotar o limite de tentativas
 def find_element_by_xpath(current_page, xpath):
     attempt = 0
     while True:
@@ -136,7 +144,8 @@ def find_element_by_xpath(current_page, xpath):
         finally:
             time.sleep(TIME_WAIT_SMALL)
             attempt += 1
-            
+
+# Procura um elemente na página para identificá-la com válida ou carregada            
 def is_page_valid_by_xpath(current_page, xpath, value):
     try:
         value_page = current_page.find_element("xpath", xpath).text
@@ -151,12 +160,14 @@ def is_page_valid_by_xpath(current_page, xpath, value):
 def get_current_page_url(current_page):
     return current_page.current_url
 
+# Verifica se o sistema operacional tem uma interface gráfica
 def exit_GUI():
     if 'DISPLAY' in os.environ:
         return True
     else:
         return False
 
+# Procura por erros após submeter o login
 def find_login_errors(current_page):
     xpath1 = "/html/body/p[1]/b"
     xpath2 = "/html/body/font"
@@ -172,6 +183,7 @@ def find_login_errors(current_page):
             return "CNPJ não habilitado"
     return None
 
+# Executa o login e carrega a página seguinte
 def execute_login(traveler_list, json_data):
     # Carrega o webdriver ChromeDriver e abre a página
     # Navegador leadless
@@ -202,12 +214,13 @@ def execute_login(traveler_list, json_data):
         return {"error": error, "current_page": None}
     return {"error": None, "current_page": current_page}
 
+# Leve até a lista de passageiros (Para: inserir, listar, excluir)
 def go_traveler_list(traveler_list, json_data, current_page):
     # Redireciona para um tipo de viajem
     path_button_avancar = '//*[@id="AutoNumber2"]/tbody/tr[43]/td[2]/input[2]'
     if traveler_list.tipo_viagem == 'NORMAL':
         find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[8]/td[2]/a').click()
-    elif traveler_list.tipo_viagem == 'ATIPICA':
+    elif traveler_list.tipo_viagem == 'ARTIGO37I':
         find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[6]/td[2]/dd/a').click()
         #print(f'__available_travel_options_page == {get_current_page_url(current_page)}')
         if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/font/b', json_data["available_travel_options_page"]):
@@ -268,6 +281,7 @@ def go_traveler_list(traveler_list, json_data, current_page):
     
     return {"error": None, "current_page": current_page, "traveler_number_in_solicitacao": traveler_number_in_solicitacao} 
 
+# Adiciona passageiros na lista
 def execute_add(traveler_list: model.ListaViagem):
     with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
         json_data = json.load(my_json)
@@ -292,7 +306,7 @@ def execute_add(traveler_list: model.ListaViagem):
         
                 for passageiro in traveler_list.passageiros:
                     if not exist_traveler(current_page, passageiro):
-                        set_passageiro(current_page, passageiro)
+                        set_traveler_in_form(current_page, passageiro)
                         find_element_by_xpath(current_page, '//*[@id="btnInc"]').click()
 
                         #print(f'_______traveler_list_adder_page == {get_current_page_url(current_page)}')
@@ -302,7 +316,7 @@ def execute_add(traveler_list: model.ListaViagem):
                         existing_traveler.append(passageiro)
                 
                 traveler_number_in_list = traveler_number_in_list_exec(current_page)
-                current_page.close()
+                current_page.quit()
                 return {"error": None, "summary": {"existing_traveler": existing_traveler, 
                                                 "traveler_number_in_solicitacao": traveler_number_in_solicitacao, 
                                                 "traveler_number_in_list": traveler_number_in_list}}
@@ -316,6 +330,7 @@ def execute_add(traveler_list: model.ListaViagem):
                 break
     return {"error": f'Erro ao tentar abrir "{ open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE)) }"', "summary": None}
 
+# Lista os passageiros já salvos
 def execute_list(traveler_list: model.ListaViagem):
 
     with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
@@ -330,7 +345,7 @@ def execute_list(traveler_list: model.ListaViagem):
                 current_page = result_login["current_page"]
 
                 # Vai até a lista de passageiros
-                traveler_list.tipo_viagem = "ATIPICA"
+                traveler_list.tipo_viagem = "ARTIGO37I"
                 result_traveler_list = go_traveler_list(traveler_list, json_data, current_page)
                 if result_traveler_list['error'] == f'A solicitação número {traveler_list.num_solicitacao} não foi encontrada.':
                     traveler_list.tipo_viagem = "NORMAL"
@@ -342,7 +357,7 @@ def execute_list(traveler_list: model.ListaViagem):
                 
                 current_page = result_traveler_list["current_page"]
                 traveler_list.passageiros = find_travelers(current_page)
-                current_page.close()
+                current_page.quit()
                 return {"error": None, "travelers":  traveler_list}
             
             except PageNotFoundExcept:
@@ -356,6 +371,7 @@ def execute_list(traveler_list: model.ListaViagem):
 
     return {"error": f'Erro ao tentar abrir "{ open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE)) }"', "summary": None}
 
+# Subprocesso para remove todos os passageiros já salvos
 def remove_travelers(current_page):
     attempt = 0
     while True:
@@ -372,7 +388,7 @@ def remove_travelers(current_page):
             time.sleep(TIME_WAIT_SMALL)
             attempt += 1         
 
-
+# Remove todos os passageiros já salvos
 def execute_remove(traveler_list: model.ListaViagem):
 
     with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
@@ -388,7 +404,7 @@ def execute_remove(traveler_list: model.ListaViagem):
                 current_page = result_login["current_page"]
 
                 # Vai até a lista de passageiros
-                traveler_list.tipo_viagem = "ATIPICA"
+                traveler_list.tipo_viagem = "ARTIGO37I"
                 result_traveler_list = go_traveler_list(traveler_list, json_data, current_page)
                 if result_traveler_list['error'] == f'A solicitação número {traveler_list.num_solicitacao} não foi encontrada.':
                     traveler_list.tipo_viagem = "NORMAL"
@@ -402,7 +418,7 @@ def execute_remove(traveler_list: model.ListaViagem):
                 
                 if remove_travelers(current_page):
                     traveler_list.passageiros = []
-                current_page.close()
+                current_page.quit()
                 return {"error": None, "travelers":  traveler_list}
             
             except PageNotFoundExcept:
@@ -416,6 +432,7 @@ def execute_remove(traveler_list: model.ListaViagem):
 
     return {"error": f'Erro ao tentar abrir "{ open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE)) }"', "summary": None}
 
+# Subprocesso para buscar manifestos um veiculo específico
 def find_manifests(current_page, tipo_viagem):
  
     manifests = []
@@ -427,50 +444,53 @@ def find_manifests(current_page, tipo_viagem):
 
     return manifests
 
+# Buscar manifestos para um veiculo específico
 def execute_find_manifest(traveler_list):
     with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
         json_data = json.load(my_json)
-    while True:
-        try:
-            # Realiza o Login
-            result_login = execute_login(traveler_list, json_data)
-            if result_login['error']:
-                return {"error": result_login['error'], "summary": None}
-            
-            current_page = result_login["current_page"]
-            
-            # Redireciona para um tipo de viajem
-            find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[8]/td[2]/a').click()
-            if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/h4', json_data["request_list_page"]):
-                return {"error": f'A página não foi encontrada! Local: request_list_page', "summary": None}
-            
-            
-            manifests = find_manifests(current_page, "NORMAL")
-            
-            find_element_by_xpath(current_page, '//*[@id="AutoNumber2"]/tbody/tr/td[1]/input').click()
-            if not is_page_valid_by_xpath(current_page, '/html/body/table[2]/tbody/tr[2]/td[2]/table/tbody/tr[1]/td/i/b/font', json_data["request_trip_page"]):
-                raise PageNotFoundExcept("Page not found: ")
-            
-            find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[6]/td[2]/dd/a').click()
-            #print(f'__available_travel_options_page == {get_current_page_url(current_page)}')
-            if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/font/b', json_data["available_travel_options_page"]):
-                return {"error": f'A página não foi encontrada! Local: available_travel_options_page', "summary": None} 
-            find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[5]/td[4]/input').click()
+        while True:
+            try:
+                # Realiza o Login
+                result_login = execute_login(traveler_list, json_data)
+                if result_login['error']:
+                    return {"error": result_login['error'], "summary": None}
+                
+                current_page = result_login["current_page"]
+                
+                # Redireciona para um tipo de viajem
+                find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[8]/td[2]/a').click()
+                if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/h4', json_data["request_list_page"]):
+                    return {"error": f'A página não foi encontrada! Local: request_list_page', "summary": None}
+                
+                
+                manifests = find_manifests(current_page, "NORMAL")
+                
+                find_element_by_xpath(current_page, '//*[@id="AutoNumber2"]/tbody/tr/td[1]/input').click()
+                if not is_page_valid_by_xpath(current_page, '/html/body/table[2]/tbody/tr[2]/td[2]/table/tbody/tr[1]/td/i/b/font', json_data["request_trip_page"]):
+                    raise PageNotFoundExcept("Page not found: ")
+                
+                find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[6]/td[2]/dd/a').click()
+                #print(f'__available_travel_options_page == {get_current_page_url(current_page)}')
+                if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/font/b', json_data["available_travel_options_page"]):
+                    return {"error": f'A página não foi encontrada! Local: available_travel_options_page', "summary": None} 
+                find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[5]/td[4]/input').click()
 
-            manifests += find_manifests(current_page, "ATIPICA")
-            current_page.close()
-            return {"error": None, "manifests": manifests}
-        
-        except PageNotFoundExcept:
-            print("Erro 1")
-            time.sleep(TIME_RECONNECT)
-        except NumberOffortExceeded:
-            print("Erro 2")
-            time.sleep(TIME_RECONNECT) 
-        except WebDriverException:
-            print("Erro 3")
-            time.sleep(TIME_RECONNECT)
-        except KeyboardInterrupt:
-            break
+                manifests += find_manifests(current_page, "ATIPICA")
+                current_page.quit()
+                return {"error": None, "manifests": manifests}
+            
+            except PageNotFoundExcept:
+                print("Erro 1")
+                time.sleep(TIME_RECONNECT)
+            except NumberOffortExceeded:
+                print("Erro 2")
+                time.sleep(TIME_RECONNECT) 
+            except WebDriverException:
+                print("Erro 3")
+                time.sleep(TIME_RECONNECT)
+            except KeyboardInterrupt:
+                break
+    return {"error": f'Erro ao tentar abrir "{ open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE)) }"', "summary": None}
+
 # 475
 # 629

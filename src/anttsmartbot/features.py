@@ -80,6 +80,8 @@ def find_manifest(placa: str):
                     ctrl = False
                 else:
                     print(f'                             : {manifest['solicitacao']} ({manifest['tipo_viagem']})')
+            if len(data['manifests']) == 0:
+                print("   | Solicicações pendentes..: Nenhuma solicitação pendente.")
         print()
     else:
         print(f'Ocorreu um erro ao abrir o arquivo "{join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')

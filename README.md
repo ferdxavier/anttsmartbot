@@ -12,6 +12,6 @@
 * Não está fechando a pagina inicial
 * Tratar nome vazio
 * Está aparecendo 0 passageiros encontrados antes.
+* Quando erra passa para outra lista
 Tratar CPF Como número
 observacao: O número deve ficar a esquerda e como str. Descobrir como o campo deve sempre ser str
-Quando erra passa para outra lista

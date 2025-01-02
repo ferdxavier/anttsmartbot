@@ -75,7 +75,7 @@ TIPO_DOCUMENTO = {
 
 TIPO_VIAGEM = [
     "NORMAL",
-    "ATIPICA"
+    "ARTIGO37I"
 ]
     
 def load_traveler_List(str):

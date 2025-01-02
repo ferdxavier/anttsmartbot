@@ -46,6 +46,8 @@ def find_options(parametro):
             return 'Comando inválido! Tente: "anttsmartbot list [placa] [solicitação]"'
         case 'file':
             return 'Comando inválido! Tente: "anttsmartbot file [caminho do arquivo]"'
+        case 'manifest':
+            return 'Comando inválido! Tente: "anttsmartbot manifest [placa|all]"'
         case _:
             return 'Comando inválido! Tente: "anttsmartbot [find|remove|list|file|manifest]"'
 
@@ -63,7 +65,14 @@ def init_process():
             if sys.argv[1] == 'file':
                 add_file(sys.argv[2])
             if sys.argv[1] == 'manifest':
-                find_manifest(sys.argv[2])
+                if sys.argv[2] == 'all':
+                    with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME), encoding='utf-8') as my_json:
+                        json_data = json.load(my_json)
+                        placas = json_data["cars"]
+                        for placa in placas:
+                            find_manifest(placa)
+                else:
+                    find_manifest(sys.argv[2])
         elif len(sys.argv) == 4:
             placa = sys.argv[2]
             solicitacao = sys.argv[3]
