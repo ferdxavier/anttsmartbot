@@ -40,7 +40,7 @@ def process_file(file, path_workdir):
                         with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME) , "w") as my_json:
                             json.dump(json_data, my_json, indent=4)
             else:
-                print(f'  * Passageiros digitados está diferente da lista. Verifique a lista "{file["fullpath"]}".')
+                print(f'  * O número de passageiros digitados está diferente da lista. Verifique a lista "{file["fullpath"]}".')
 
             print(f'  * {traveler_lista} passageiro(s) digitalizado(s).')
             if traveler_lista != traveler_solicitacao:
@@ -54,8 +54,9 @@ def process_file(file, path_workdir):
     sleep(0.5)
 
 def main_process():
-    with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR), encoding='utf-8') as my_json:
-        json_data = json.load(my_json)
+    try:
+        with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR), encoding='utf-8') as my_json:
+            json_data = json.load(my_json)
         path_workdir = json_data["workdir"]
         files =  util.list_files(path_workdir)
         current_datetime = datetime.now()
@@ -83,10 +84,13 @@ def main_process():
 
         else:
             print('  Nenhum arquivo encontrado!')
+    except FileNotFoundError:
+        print(f'  # Arquivo não encontrado: {os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR)}')
         
 def main_spy():
-    with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR), encoding='utf-8') as my_json:
-        json_data = json.load(my_json)
+    try:
+        with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR), encoding='utf-8') as my_json:
+            json_data = json.load(my_json)
         path_workdir = json_data["workdir"]
         print("")
         print(f'Lendo pasta de listas de passageiros "{path_workdir}".')
@@ -98,3 +102,5 @@ def main_spy():
             except KeyboardInterrupt:
                 break
         print("<<<<------------------------------------------------------------>>>>")
+    except FileNotFoundError:
+        print(f'  # Arquivo não encontrado: {os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR)}')

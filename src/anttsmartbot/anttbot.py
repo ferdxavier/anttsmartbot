@@ -68,9 +68,9 @@ def init_process():
                 if sys.argv[2] == 'all':
                     with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME), encoding='utf-8') as my_json:
                         json_data = json.load(my_json)
-                        placas = json_data["cars"]
-                        for placa in placas:
-                            find_manifest(placa)
+                    placas = json_data["cars"]
+                    for placa in placas:
+                        find_manifest(placa)
                 else:
                     find_manifest(sys.argv[2])
         elif len(sys.argv) == 4:

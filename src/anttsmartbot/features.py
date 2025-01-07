@@ -76,10 +76,10 @@ def find_manifest(placa: str):
             ctrl = True
             for manifest in data['manifests']:
                 if ctrl:
-                    print(f'   | Solicicações pendentes..: {manifest['solicitacao']} ({manifest['tipo_viagem']})')
+                    print(f'   | Solicicações pendentes..: {traveler_list.placa} {manifest['solicitacao']} ({manifest['tipo_viagem']})')
                     ctrl = False
                 else:
-                    print(f'                             : {manifest['solicitacao']} ({manifest['tipo_viagem']})')
+                    print(f'                             : {traveler_list.placa} {manifest['solicitacao']} ({manifest['tipo_viagem']})')
             if len(data['manifests']) == 0:
                 print("   | Solicicações pendentes..: Nenhuma solicitação pendente.")
         print()

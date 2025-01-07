@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchWindowException, NoSuchElementException, WebDriverException
 from selenium.webdriver.support.ui import Select
+from urllib3.exceptions import ReadTimeoutError
 from .models import model
 from .models.model import Passageiro
 from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE
@@ -15,15 +16,29 @@ OPTIONS.add_argument("--disable-gpu")
 OPTIONS.add_argument("--no-sandbox")
 
 # Constantes utilizadas na execução do fluxo
-TIME_RECONNECT = 15
-TIME_WAIT_SMALL = 0.04
-NUM_ATTEMPTS_TO_ACESS_ELEMENT = 40
-TRY_MANIFEST_PAGE = 10
-TIME_TRY_MANIFEST_PAGE = 0.4
-TIME_WAIT_ANOTHER_CLICK = 0.3
+"""
+TIME_RECONNECT = 30
+TIME_WAIT_SMALL = 0.08
+NUM_ATTEMPTS_TO_ACESS_ELEMENT = 50
+TRY_MANIFEST_PAGE = 20
+TIME_TRY_MANIFEST_PAGE = 0.8
+TIME_WAIT_ANOTHER_CLICK = 0.6
 MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solicitacao1.asp?cmdOpcao=Consultar&txtNumeroSolicitacao='
 PATH_WEBDRIVER = "../../webdriver/chromedriver"
 LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
+"""
+
+# Constantes utilizadas na execução do fluxo
+TIME_RECONNECT = 15
+TIME_WAIT_SMALL = 0.02
+NUM_ATTEMPTS_TO_ACESS_ELEMENT = 30
+TRY_MANIFEST_PAGE = 8
+TIME_TRY_MANIFEST_PAGE = 0.25
+TIME_WAIT_ANOTHER_CLICK = 0.2
+MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solicitacao1.asp?cmdOpcao=Consultar&txtNumeroSolicitacao='
+PATH_WEBDRIVER = "../../webdriver/chromedriver"
+LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
+
 
 # Tenta clicar em um elemente até que consiga
 def local_click(action):
@@ -34,6 +49,8 @@ def local_click(action):
         except NoSuchWindowException:
             time.sleep(TIME_WAIT_ANOTHER_CLICK)
         except NoSuchElementException:
+            time.sleep(TIME_WAIT_ANOTHER_CLICK)
+        except ReadTimeoutError:
             time.sleep(TIME_WAIT_ANOTHER_CLICK)
 
 # Preenche o formulário com os dados do passageiro
@@ -123,6 +140,8 @@ def exist_element(current_page, xpath):
         return False
     except NoSuchElementException:
         return False
+    except ReadTimeoutError:
+        return False
 
 class NumberOffortExceeded(Exception):
     pass
@@ -141,6 +160,9 @@ def find_element_by_xpath(current_page, xpath):
         except NoSuchWindowException:
             if attempt == NUM_ATTEMPTS_TO_ACESS_ELEMENT:
                 raise NumberOffortExceeded("Number of effort exceeded.")
+        except ReadTimeoutError:
+            if attempt == NUM_ATTEMPTS_TO_ACESS_ELEMENT:
+                raise NumberOffortExceeded("Number of effort exceeded.")
         finally:
             time.sleep(TIME_WAIT_SMALL)
             attempt += 1
@@ -155,6 +177,8 @@ def is_page_valid_by_xpath(current_page, xpath, value):
     except NoSuchWindowException:
         return False
     except NoSuchElementException:
+        return False
+    except ReadTimeoutError:
         return False
     
 def get_current_page_url(current_page):
@@ -228,7 +252,7 @@ def go_traveler_list(traveler_list, json_data, current_page):
         find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[5]/td[4]/input').click()
         path_button_avancar = '//*[@id="AutoNumber2"]/tbody/tr[45]/td[2]/input[2]'
     else:
-        return {"error": f'O tipo da viagem é inválido. Tente "NORMAL" ou "ATIPICA"', "summary": None} 
+        return {"error": f'O tipo da viagem é inválido. Tente "NORMAL" ou "ARTIGO37I"', "summary": None} 
         
     #print(f'______________request_list_page == {get_current_page_url(current_page)}')
     if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/h4', json_data["request_list_page"]):
@@ -236,19 +260,23 @@ def go_traveler_list(traveler_list, json_data, current_page):
     
     # Procura pela solicitação desejada e a seleciona
     find_flag = False
-    for x in range(2, 12):
-        solicitacao = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[2]').text
-        status = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[3]').text                                 
-        if traveler_list.num_solicitacao == solicitacao:
-            if str(status).upper() == "PENDENTE":
-                find_element_by_xpath(current_page, f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[2]/a').click()
-                find_flag = True
-                break
-            else:
-                if str(status).upper() == "CANCELADA":
-                    return {"error": f'A solicitação número {traveler_list.num_solicitacao} foi cancelada.', "summary": None}
+    x = 2
+    while True:
+        try:
+            solicitacao = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[2]').text
+            status = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[3]').text                                 
+            if traveler_list.num_solicitacao == solicitacao:
+                if str(status).upper() == "PENDENTE":
+                    find_element_by_xpath(current_page, f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[2]/a').click()
+                    find_flag = True
+                    break
                 else:
-                    return {"error": f'A solicitação número {traveler_list.num_solicitacao} já foi emitida.', "summary": None}
+                    if str(status).upper() == "CANCELADA":
+                        return {"error": f'A solicitação número {traveler_list.num_solicitacao} foi cancelada.', "summary": None}
+                    else:
+                        return {"error": f'A solicitação número {traveler_list.num_solicitacao} já foi emitida.', "summary": None}
+        except NoSuchElementException:
+            pass
     if not find_flag:
         return {"error": f'A solicitação número {traveler_list.num_solicitacao} não foi encontrada.', "summary": None}
     
@@ -326,8 +354,11 @@ def execute_add(traveler_list: model.ListaViagem):
                 time.sleep(TIME_RECONNECT) 
             except WebDriverException:
                 time.sleep(TIME_RECONNECT)
+            except ReadTimeoutError:
+                time.sleep(TIME_RECONNECT)
             except KeyboardInterrupt:
                 break
+
     return {"error": f'Erro ao tentar abrir "{ open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE)) }"', "summary": None}
 
 # Lista os passageiros já salvos
@@ -366,6 +397,8 @@ def execute_list(traveler_list: model.ListaViagem):
                 time.sleep(TIME_RECONNECT) 
             except WebDriverException:
                 time.sleep(TIME_RECONNECT)
+            except ReadTimeoutError:
+                time.sleep(TIME_RECONNECT)
             except KeyboardInterrupt:
                 break
 
@@ -382,6 +415,9 @@ def remove_travelers(current_page):
         except NoSuchElementException:
             return True
         except NoSuchWindowException:
+            if attempt == NUM_ATTEMPTS_TO_ACESS_ELEMENT:
+                raise NumberOffortExceeded("Number of effort exceeded.")
+        except ReadTimeoutError:
             if attempt == NUM_ATTEMPTS_TO_ACESS_ELEMENT:
                 raise NumberOffortExceeded("Number of effort exceeded.")
         finally:
@@ -427,6 +463,8 @@ def execute_remove(traveler_list: model.ListaViagem):
                 time.sleep(TIME_RECONNECT) 
             except WebDriverException:
                 time.sleep(TIME_RECONNECT)
+            except ReadTimeoutError:
+                time.sleep(TIME_RECONNECT)
             except KeyboardInterrupt:
                 break
 
@@ -434,20 +472,23 @@ def execute_remove(traveler_list: model.ListaViagem):
 
 # Subprocesso para buscar manifestos um veiculo específico
 def find_manifests(current_page, tipo_viagem):
- 
     manifests = []
-    for x in range(2, 12):
-        solicitacao = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[2]').text
-        status = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[3]').text                                 
-        if str(status).upper() == "PENDENTE":
-            manifests.append({"solicitacao": solicitacao, "tipo_viagem": tipo_viagem})
-
-    return manifests
+    x = 2
+    while True:
+        try:
+            solicitacao = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[2]').text
+            status = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[3]').text           
+            if str(status).upper() == "PENDENTE":
+                manifests.append({"solicitacao": solicitacao, "tipo_viagem": tipo_viagem})
+            x += 1
+        except NoSuchElementException:
+            return manifests
 
 # Buscar manifestos para um veiculo específico
 def execute_find_manifest(traveler_list):
-    with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
-        json_data = json.load(my_json)
+    try:
+        with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
+            json_data = json.load(my_json)
         while True:
             try:
                 # Realiza o Login
@@ -464,7 +505,7 @@ def execute_find_manifest(traveler_list):
                 
                 
                 manifests = find_manifests(current_page, "NORMAL")
-                
+
                 find_element_by_xpath(current_page, '//*[@id="AutoNumber2"]/tbody/tr/td[1]/input').click()
                 if not is_page_valid_by_xpath(current_page, '/html/body/table[2]/tbody/tr[2]/td[2]/table/tbody/tr[1]/td/i/b/font', json_data["request_trip_page"]):
                     raise PageNotFoundExcept("Page not found: ")
@@ -475,22 +516,22 @@ def execute_find_manifest(traveler_list):
                     return {"error": f'A página não foi encontrada! Local: available_travel_options_page', "summary": None} 
                 find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[5]/td[4]/input').click()
 
-                manifests += find_manifests(current_page, "ATIPICA")
+                manifests += find_manifests(current_page, "ARTIGO37I")
                 current_page.quit()
                 return {"error": None, "manifests": manifests}
             
             except PageNotFoundExcept:
-                print("Erro 1")
                 time.sleep(TIME_RECONNECT)
             except NumberOffortExceeded:
-                print("Erro 2")
                 time.sleep(TIME_RECONNECT) 
             except WebDriverException:
-                print("Erro 3")
+                time.sleep(TIME_RECONNECT)
+            except ReadTimeoutError:
                 time.sleep(TIME_RECONNECT)
             except KeyboardInterrupt:
                 break
-    return {"error": f'Erro ao tentar abrir "{ open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE)) }"', "summary": None}
+    except FileNotFoundError:
+        return {"error": f'Erro ao tentar abrir "{ open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE)) }"', "summary": None}
 
 # 475
 # 629

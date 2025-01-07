@@ -15,13 +15,4 @@
 * Quando erra passa para outra lista
 Tratar CPF Como número
 observacao: O número deve ficar a esquerda e como str. Descobrir como o campo deve sempre ser str
-
-        _
-       | |
-   __ _| |__  _ __ _____   ____ _
-  / _` | '_ \| '__/ _ \ \ / / _` |
- | (_| | |_) | | |  __/\ V / (_| |
-  \__, |_.__/|_|  \___| \_/ \__,_|
-     | |
-     |_|
-
+Escrever processo para excluir passageiros duplicados na seguinta linha do spy.py -> print(f'  * O número de passageiros digitados está diferente da lista. Verifique a lista "{file["fullpath"]}".')

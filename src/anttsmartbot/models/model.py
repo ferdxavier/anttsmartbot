@@ -113,6 +113,7 @@ def is_list_file(passageiros, passeiro_for_add: Passageiro):
     
 def load_travelers(dataframe, lista):
     rows = dataframe[6:]
+    discart_flag = True
     for r in range(0, len(rows)):
         passageiro = Passageiro()
         passageiro.id = rows.iloc[r, 0]
@@ -137,6 +138,11 @@ def load_travelers(dataframe, lista):
                     return {"error": f'Passeiro número {r + 1} está duplicado: {passageiro.id} - {passageiro.nome}', "traveler_List": lista}
             else:
                 return {"error": f'Erro encontrado no passageiro número {r + 1}: {result}', "traveler_List": lista}
+        else:
+            if discart_flag:
+                print("  | Passageiros descartados (dados vazios)")
+                discart_flag = False
+            print(f'     > {passageiro.id}')
            
     num_lap_child = lap_child_count(lista.passageiros)
     if num_lap_child > (len(lista.passageiros) - num_lap_child):
