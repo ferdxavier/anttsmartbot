@@ -128,14 +128,15 @@ def load_travelers(dataframe, lista):
         passageiro.crianca_colo = str(rows.iloc[r, 6]).strip()
         passageiro.telefone = str(rows.iloc[r, 7]).strip()
         result = isValidPassageiro(passageiro)
-        if not result:
-            result = is_list_file(lista.passageiros, passageiro)
+        if not result == 'discard':
             if not result:
-                lista.passageiros.append(passageiro)
+                result = is_list_file(lista.passageiros, passageiro)
+                if not result:
+                    lista.passageiros.append(passageiro)
+                else:
+                    return {"error": f'Passeiro número {r + 1} está duplicado: {passageiro.id} - {passageiro.nome}', "traveler_List": lista}
             else:
-                return {"error": f'Passeiro número {r + 1} está duplicado: {passageiro.id} - {passageiro.nome}', "traveler_List": lista}
-        else:
-            return {"error": f'Erro encontrado no passageiro número {r + 1}: {result}', "traveler_List": lista}
+                return {"error": f'Erro encontrado no passageiro número {r + 1}: {result}', "traveler_List": lista}
            
     num_lap_child = lap_child_count(lista.passageiros)
     if num_lap_child > (len(lista.passageiros) - num_lap_child):
@@ -162,9 +163,20 @@ def lap_child_count(passageiros):
     for passageiro in passageiros:
         if str(passageiro.crianca_colo).upper() == "SIM":
             num += 1
-    return num       
+    return num
+
+def check_line(value: str):
+    if value == 'nan' or len(value.strip()) == 0:
+        return True
+    return False
+
+def is_empty_line_except_id(passageiro: Passageiro):
+    return check_line(passageiro.nome) and check_line(passageiro.numero_doc) and check_line(passageiro.tipo_doc) and check_line(passageiro.orgao) and check_line(passageiro.situacao) and check_line(passageiro.crianca_colo) and check_line(passageiro.telefone)
     
 def isValidPassageiro(passageiro: Passageiro):
+    if is_empty_line_except_id(passageiro):
+        return f'discard'
+    
     if len(passageiro.nome) < 3 or passageiro.nome == 'nan':
         return "Nome inválido."
     if len(passageiro.numero_doc) < 3 or passageiro.numero_doc == 'nan':

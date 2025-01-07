@@ -15,12 +15,12 @@ OPTIONS.add_argument("--disable-gpu")
 OPTIONS.add_argument("--no-sandbox")
 
 # Constantes utilizadas na execução do fluxo
-TIME_RECONNECT = 10
-TIME_WAIT_SMALL = 0.02
-NUM_ATTEMPTS_TO_ACESS_ELEMENT = 35
-TRY_MANIFEST_PAGE = 7
-TIME_TRY_MANIFEST_PAGE = 0.25
-TIME_WAIT_ANOTHER_CLICK = 0.2
+TIME_RECONNECT = 15
+TIME_WAIT_SMALL = 0.04
+NUM_ATTEMPTS_TO_ACESS_ELEMENT = 40
+TRY_MANIFEST_PAGE = 10
+TIME_TRY_MANIFEST_PAGE = 0.4
+TIME_WAIT_ANOTHER_CLICK = 0.3
 MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solicitacao1.asp?cmdOpcao=Consultar&txtNumeroSolicitacao='
 PATH_WEBDRIVER = "../../webdriver/chromedriver"
 LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
