@@ -22,15 +22,17 @@ def load_minimal_infor(placa: str, solicitacao: str):
 def describe_list(placa: str, solicitacao: str):
     traveler_list = load_minimal_infor(placa.upper(), solicitacao)
     if traveler_list:
+        print(f'Processando listagem...')
         data = execute_list(traveler_list)
         print()
-        print(f'   | Solicicação..: {str(traveler_list.placa).upper()}')
+        print(f'   | Placa..: {str(traveler_list.placa).upper()}')
+        print(f'   | Solicicação..: {str(traveler_list.num_solicitacao)}')
         print(f'   | {len(traveler_list.passageiros)} passageiro(s) encontrados.')
         print()
         if not data['error']:
             id = 1
             for traveler in traveler_list.passageiros:
-                print(f' {id:3} {traveler.nome:45} {traveler.numero_doc:30} {traveler.orgao:15}')
+                print(f' {id:3} {traveler.nome:50} {traveler.numero_doc:43} {traveler.orgao:15}')
                 id += 1
             print()
         else:
@@ -66,22 +68,28 @@ def add_file(path: str):
     else:    
         print(check_file['message'])
 
-def find_manifest(placa: str):
+def find_manifest(placa: str, list=True):
     traveler_list = load_minimal_infor(placa.upper(), "0000000000")
+    penpendings = []
     if traveler_list:
-        print()
-        print(f'   | Placa...................: {str(traveler_list.placa).upper()}')
+        if list:
+            print()
+            print(f'   | Placa...................: {str(traveler_list.placa).upper()}')
         data = execute_find_manifest(traveler_list)
         if not data['error']:
             ctrl = True
             for manifest in data['manifests']:
-                if ctrl:
-                    print(f'   | Solicicações pendentes..: {traveler_list.placa} {manifest['solicitacao']} ({manifest['tipo_viagem']})')
+                penpendings.append({"placa": traveler_list.placa, "solicitacao": manifest['solicitacao']})
+                if ctrl and list:
+                    print(f'   | Solicicações pendentes..: {manifest['solicitacao']} ({manifest['tipo_viagem']}) - Contratante: {manifest['contratante']} | Data de início: {manifest['dt_inicio']}')
                     ctrl = False
-                else:
-                    print(f'                             : {traveler_list.placa} {manifest['solicitacao']} ({manifest['tipo_viagem']})')
-            if len(data['manifests']) == 0:
+                elif list:
+                    print(f'                             : {manifest['solicitacao']} ({manifest['tipo_viagem']}) - Contratante: {manifest['contratante']} | Data de início: {manifest['dt_inicio']}')
+            if len(data['manifests']) == 0 and list:
                 print("   | Solicicações pendentes..: Nenhuma solicitação pendente.")
-        print()
+        if list:
+            print()
+        return penpendings
     else:
         print(f'Ocorreu um erro ao abrir o arquivo "{join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')
+    return None

@@ -275,8 +275,11 @@ def go_traveler_list(traveler_list, json_data, current_page):
                         return {"error": f'A solicitação número {traveler_list.num_solicitacao} foi cancelada.', "summary": None}
                     else:
                         return {"error": f'A solicitação número {traveler_list.num_solicitacao} já foi emitida.', "summary": None}
+            x += 1
         except NoSuchElementException:
-            pass
+            break
+            
+
     if not find_flag:
         return {"error": f'A solicitação número {traveler_list.num_solicitacao} não foi encontrada.', "summary": None}
     
@@ -430,43 +433,43 @@ def execute_remove(traveler_list: model.ListaViagem):
     with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
         json_data = json.load(my_json)
 
-        while True:
-            try:
-                # Realiza o Login
-                result_login = execute_login(traveler_list, json_data)
-                if result_login['error']:
-                    return {"error": result_login['error'], "summary": None}
-                
-                current_page = result_login["current_page"]
-
-                # Vai até a lista de passageiros
-                traveler_list.tipo_viagem = "ARTIGO37I"
-                result_traveler_list = go_traveler_list(traveler_list, json_data, current_page)
-                if result_traveler_list['error'] == f'A solicitação número {traveler_list.num_solicitacao} não foi encontrada.':
-                    traveler_list.tipo_viagem = "NORMAL"
-                    current_page.back()
-                    current_page.back()
-                    result_traveler_list = go_traveler_list(traveler_list, json_data, current_page)
-                    if result_traveler_list['error']:
-                        return {"error": result_traveler_list['error'], "summary": None}
-                
-                current_page = result_traveler_list["current_page"]
-                
-                if remove_travelers(current_page):
-                    traveler_list.passageiros = []
-                current_page.quit()
-                return {"error": None, "travelers":  traveler_list}
+    while True:
+        try:
+            # Realiza o Login
+            result_login = execute_login(traveler_list, json_data)
+            if result_login['error']:
+                return {"error": result_login['error'], "summary": None}
             
-            except PageNotFoundExcept:
-                time.sleep(TIME_RECONNECT)
-            except NumberOffortExceeded:
-                time.sleep(TIME_RECONNECT) 
-            except WebDriverException:
-                time.sleep(TIME_RECONNECT)
-            except ReadTimeoutError:
-                time.sleep(TIME_RECONNECT)
-            except KeyboardInterrupt:
-                break
+            current_page = result_login["current_page"]
+
+            # Vai até a lista de passageiros
+            traveler_list.tipo_viagem = "ARTIGO37I"
+            result_traveler_list = go_traveler_list(traveler_list, json_data, current_page)
+            if result_traveler_list['error'] == f'A solicitação número {traveler_list.num_solicitacao} não foi encontrada.':
+                traveler_list.tipo_viagem = "NORMAL"
+                current_page.back()
+                current_page.back()
+                result_traveler_list = go_traveler_list(traveler_list, json_data, current_page)
+                if result_traveler_list['error']:
+                    return {"error": result_traveler_list['error'], "summary": None}
+            
+            current_page = result_traveler_list["current_page"]
+            
+            if remove_travelers(current_page):
+                traveler_list.passageiros = []
+            current_page.quit()
+            return {"error": None, "travelers":  traveler_list}
+        
+        except PageNotFoundExcept:
+            time.sleep(TIME_RECONNECT)
+        except NumberOffortExceeded:
+            time.sleep(TIME_RECONNECT) 
+        except WebDriverException:
+            time.sleep(TIME_RECONNECT)
+        except ReadTimeoutError:
+            time.sleep(TIME_RECONNECT)
+        except KeyboardInterrupt:
+            break
 
     return {"error": f'Erro ao tentar abrir "{ open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE)) }"', "summary": None}
 
@@ -477,9 +480,11 @@ def find_manifests(current_page, tipo_viagem):
     while True:
         try:
             solicitacao = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[2]').text
-            status = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[3]').text           
+            status = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[3]').text
+            contratante = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[2]/td[4]').text
+            dt_inicio = current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[2]/td[6]').text
             if str(status).upper() == "PENDENTE":
-                manifests.append({"solicitacao": solicitacao, "tipo_viagem": tipo_viagem})
+                manifests.append({"solicitacao": solicitacao, "tipo_viagem": tipo_viagem, "contratante": contratante, "dt_inicio": dt_inicio})
             x += 1
         except NoSuchElementException:
             return manifests

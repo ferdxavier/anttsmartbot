@@ -59,6 +59,8 @@ def init_process():
         if len(sys.argv) == 2:
             if sys.argv[1] == 'find':
                 main_spy()
+            elif sys.argv[1] == 'init':
+                print("Arquivos de configurações iniciados.")
             else:
                 print(find_options(sys.argv[1]))
         elif len(sys.argv) == 3:
@@ -73,6 +75,21 @@ def init_process():
                         find_manifest(placa)
                 else:
                     find_manifest(sys.argv[2])
+            if sys.argv[1] == 'list':
+                if sys.argv[2] == 'all':
+                    penpendings = []
+                    with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME), encoding='utf-8') as my_json:
+                        json_data = json.load(my_json)
+                    placas = json_data["cars"]
+                    print(f'   Buscando todas as viagens com solicitação pendente.')
+                    for placa in placas:
+                        penpendings += find_manifest(placa, False)
+                        #penpendings += find_manifest(placa)
+                    for penpending in penpendings:
+                        describe_list(penpending["placa"], penpending["solicitacao"])
+                    print("---------------------------------------------------------------------------------")
+                    print()
+
         elif len(sys.argv) == 4:
             placa = sys.argv[2]
             solicitacao = sys.argv[3]
