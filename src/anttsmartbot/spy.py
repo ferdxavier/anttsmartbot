@@ -46,7 +46,7 @@ def process_file(file, path_workdir):
             if traveler_lista != traveler_solicitacao:
                 print(f'    * O número de passageiros no Manifesto é diferente da lista: {traveler_solicitacao} passageiro(s)')
         else:
-            print(f'  * {data['error']}')
+            print(f'  * {data["error"]}')
         
     else:
         print("  # " +data["error"])

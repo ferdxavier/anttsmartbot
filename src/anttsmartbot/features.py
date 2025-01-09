@@ -36,7 +36,7 @@ def describe_list(placa: str, solicitacao: str):
                 id += 1
             print()
         else:
-            print(f'   * {data['error']}')
+            print(f'   * {data["error"]}')
     else:
         print(f'   Ocorreu um erro ao abrir o arquivo "{join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')
 
@@ -81,10 +81,10 @@ def find_manifest(placa: str, list=True):
             for manifest in data['manifests']:
                 penpendings.append({"placa": traveler_list.placa, "solicitacao": manifest['solicitacao']})
                 if ctrl and list:
-                    print(f'   | Solicicações pendentes..: {manifest['solicitacao']} ({manifest['tipo_viagem']}) - Contratante: {manifest['contratante']} | Data de início: {manifest['dt_inicio']}')
+                    print(f'   | Solicicações pendentes..: {manifest["solicitacao"]} ({manifest["tipo_viagem"]}) - Contratante: {manifest["contratante"]} | Data de início: {manifest["dt_inicio"]}')
                     ctrl = False
                 elif list:
-                    print(f'                             : {manifest['solicitacao']} ({manifest['tipo_viagem']}) - Contratante: {manifest['contratante']} | Data de início: {manifest['dt_inicio']}')
+                    print(f'                             : {manifest["solicitacao"]} ({manifest["tipo_viagem"]}) - Contratante: {manifest["contratante"]} | Data de início: {manifest["t_inicio"]}')
             if len(data['manifests']) == 0 and list:
                 print("   | Solicicações pendentes..: Nenhuma solicitação pendente.")
         if list:
