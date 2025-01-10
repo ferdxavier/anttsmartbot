@@ -71,6 +71,8 @@ def init_process():
                     with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME), encoding='utf-8') as my_json:
                         json_data = json.load(my_json)
                     placas = json_data["cars"]
+                    if not len(placas):
+                        print(f'   Nenhum veículo cadastrado em "{os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)}"')
                     for placa in placas:
                         find_manifest(placa)
                 else:
