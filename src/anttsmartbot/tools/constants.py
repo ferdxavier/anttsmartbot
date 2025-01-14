@@ -24,5 +24,5 @@ ID_PAGE = {
 }
 
 DEFAULT_WORKDIR = {
-    "workdir": os.path.join(os.path.expanduser("~"), "listas")
+    "workdir": os.path.join(os.path.expanduser("~"), "listas"),
 }

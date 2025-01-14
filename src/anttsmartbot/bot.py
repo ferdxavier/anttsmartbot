@@ -87,7 +87,7 @@ def exist_traveler(current_page, passageiro):
             numero_doc = str(current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{index}]/td[5]').text).strip()
             orgao = str(current_page.find_element("xpath", f'//*[@id="AutoNumber3"]/tbody/tr[{index}]/td[6]').text).strip()
             primary_key_up = str(nome + numero_doc + orgao).upper()
-            if primary_key_down == primary_key_up:
+            if primary_key_down.replace(" ", "") == primary_key_up.replace(" ", ""):
                 return True 
             index += 1
         except NoSuchElementException:

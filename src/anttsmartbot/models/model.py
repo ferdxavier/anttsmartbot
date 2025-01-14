@@ -113,18 +113,21 @@ def is_list_file(passageiros, passeiro_for_add: Passageiro):
     
 def load_travelers(dataframe, lista):
     rows = dataframe[6:]
-    discart_flag = True
+    #discart_flag = True
     for r in range(0, len(rows)):
         passageiro = Passageiro()
         passageiro.id = rows.iloc[r, 0]
-        passageiro.nome = str(rows.iloc[r, 1]).strip()
-        passageiro.numero_doc = str(rows.iloc[r, 2])
+        
+        passageiro.nome = str(rows.iloc[r, 1]).strip().replace("  ", " ").replace("   ", " ").replace("    ", " ").replace("     ", " ").replace("      ", " ").replace("       ", " ")
+        passageiro.numero_doc = str(rows.iloc[r, 2]).replace("  ", " ").replace("   ", " ").replace("    ", " ").replace("     ", " ").replace("      ", " ").replace("       ", " ")
+        
         passageiro.tipo_doc = str(rows.iloc[r, 3]).strip()
        # if passageiro.tipo_doc.upper() == "CPF":
        #     cpf_temp = passageiro.numero_doc.replace("-", "").replace(".", "")
        #     cpf = cpf_temp[:3] + "." + cpf_temp[3:6] + "." + cpf_temp[6:9] + "-" + cpf_temp[9:]
        
-        passageiro.orgao = str(rows.iloc[r, 4]).strip()
+        passageiro.orgao = str(rows.iloc[r, 4]).strip().replace("  ", " ").replace("   ", " ").replace("    ", " ").replace("     ", " ").replace("      ", " ").replace("       ", " ")
+        
         passageiro.situacao = str(rows.iloc[r, 5]).strip()
         passageiro.crianca_colo = str(rows.iloc[r, 6]).strip()
         passageiro.telefone = str(rows.iloc[r, 7]).strip()
@@ -138,11 +141,11 @@ def load_travelers(dataframe, lista):
                     return {"error": f'Passeiro número {r + 1} está duplicado: {passageiro.id} - {passageiro.nome}', "traveler_List": lista}
             else:
                 return {"error": f'Erro encontrado no passageiro número {r + 1}: {result}', "traveler_List": lista}
-        else:
-            if discart_flag:
-                print("  | Passageiros descartados (dados vazios)")
-                discart_flag = False
-            print(f'     > {passageiro.id}')
+        #else:
+            #if discart_flag:
+            #    print("  | Passageiros descartados (dados vazios)")
+            #    discart_flag = False
+            #print(f'     > {passageiro.id}')
            
     num_lap_child = lap_child_count(lista.passageiros)
     if num_lap_child > (len(lista.passageiros) - num_lap_child):
