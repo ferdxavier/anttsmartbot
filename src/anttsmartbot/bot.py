@@ -55,7 +55,15 @@ def local_click(action):
 
 # Preenche o formulário com os dados do passageiro
 def set_traveler_in_form(current_page, passageiro):
-    time.sleep(0.03)
+    time.sleep(0.04)
+   
+
+    data_form = current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input' ).text.strip()
+    data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[9]/td[2]/input' ).text.strip()
+    data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[10]/td[2]/input').text.strip()
+    if not data_form:
+        return
+
     current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input').send_keys(passageiro.nome)
     current_page.find_element("xpath", '//*[@id="telefone"]').send_keys(passageiro.telefone)
     combobox_select(current_page.find_element("xpath", '//*[@id="cmbMotivoViagem"]'), passageiro.situacao)
