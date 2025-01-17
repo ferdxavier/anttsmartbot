@@ -35,6 +35,7 @@ NUM_ATTEMPTS_TO_ACESS_ELEMENT = 30
 TRY_MANIFEST_PAGE = 8
 TIME_TRY_MANIFEST_PAGE = 0.25
 TIME_WAIT_ANOTHER_CLICK = 0.2
+TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER = 0.25
 MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solicitacao1.asp?cmdOpcao=Consultar&txtNumeroSolicitacao='
 PATH_WEBDRIVER = "../../webdriver/chromedriver"
 LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
@@ -55,16 +56,26 @@ def local_click(action):
 
 # Preenche o formulário com os dados do passageiro
 def set_traveler_in_form(current_page, passageiro):
-    time.sleep(0.035)
-   
+    time.sleep(TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER)
 
-    data_form = current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input' ).text.strip()
-    data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[9]/td[2]/input' ).text.strip()
-    data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[10]/td[2]/input').text.strip()
-    # print(f'data_form: {not data_form} --> Passageiro lista: {passageiro.nome}')
-    if not data_form:
-        time.sleep(5)
-
+    attempt = 0
+    data_form = "first_loop"
+    while not len(data_form) == 0:
+        if attempt == NUM_ATTEMPTS_TO_ACESS_ELEMENT:
+            raise NumberOffortExceeded("Number of effort exceeded in add traveller.")
+        data_form = ""
+        data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input' ).text.strip()
+        data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[9]/td[2]/input' ).text.strip()
+        data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[10]/td[2]/input').text.strip()
+        if not len(data_form) == 0:
+            time.sleep(TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER)
+            attempt += 1
+    #data_form = current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input' ).text.strip()
+    #data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[9]/td[2]/input' ).text.strip()
+    #data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[10]/td[2]/input').text.strip()
+    #print(f'data_form: {not data_form} -- {data_form} --> Passageiro lista: {passageiro.nome}')
+    #if not len(data_form) == 0:
+     #   time.sleep(5)
     current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input').send_keys(passageiro.nome)
     current_page.find_element("xpath", '//*[@id="telefone"]').send_keys(passageiro.telefone)
     combobox_select(current_page.find_element("xpath", '//*[@id="cmbMotivoViagem"]'), passageiro.situacao)
