@@ -108,8 +108,8 @@ def is_list_file(passageiros, passeiro_for_add: Passageiro):
     for passageiro in passageiros:
         pass_primary_key_list = str(passageiro.nome + passageiro.numero_doc + passageiro.orgao).upper()
         if pass_primary_key_add == pass_primary_key_list:
-            return True
-    return False
+            return passageiro.id
+    return None
     
 def load_travelers(dataframe, lista):
     rows = dataframe[6:]
@@ -138,7 +138,7 @@ def load_travelers(dataframe, lista):
                 if not result:
                     lista.passageiros.append(passageiro)
                 else:
-                    return {"error": f'Passeiro número {r + 1} está duplicado: {passageiro.id} - {passageiro.nome}', "traveler_List": lista}
+                    return {"error": f'Os passeiros de números {result} e {r + 1} estão duplicados: {passageiro.nome}', "traveler_List": lista}
             else:
                 return {"error": f'Erro encontrado no passageiro número {r + 1}: {result}', "traveler_List": lista}
         #else:

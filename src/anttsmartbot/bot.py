@@ -4,16 +4,24 @@ from selenium.webdriver.support.ui import Select
 from urllib3.exceptions import ReadTimeoutError
 from .models import model
 from .models.model import Passageiro
-from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE
+from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, JSON_PATH_WORKDIR, \
+                                ANTTSMARTBOT_SAVE_PAGES_PATH
 import json, sys, time, os
 from os.path import join
 from selenium.webdriver.chrome.options import Options
+import pdfkit
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 # Configurações navegador headless
-OPTIONS = Options()
-OPTIONS.add_argument("--headless")
-OPTIONS.add_argument("--disable-gpu")
-OPTIONS.add_argument("--no-sandbox")
+OPTIONS_HEADLESS = webdriver.ChromeOptions()
+OPTIONS_HEADLESS.add_argument("--headless")
+OPTIONS_HEADLESS.add_argument("--disable-gpu")
+OPTIONS_HEADLESS.add_argument("--no-sandbox")
 
 # Constantes utilizadas na execução do fluxo
 """
@@ -40,6 +48,12 @@ MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solic
 PATH_WEBDRIVER = "../../webdriver/chromedriver"
 LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
 
+def save_the_html_page(current_page: webdriver.Chrome, filename):
+    page_source = current_page.page_source
+
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(page_source)
+
 
 # Tenta clicar em um elemente até que consiga
 def local_click(action):
@@ -61,6 +75,7 @@ def set_traveler_in_form(current_page, passageiro):
     attempt = 0
     data_form = "first_loop"
     while not len(data_form) == 0:
+        print(f'{passageiro} : {not len(data_form)}')
         if attempt == NUM_ATTEMPTS_TO_ACESS_ELEMENT:
             raise NumberOffortExceeded("Number of effort exceeded in add traveller.")
         data_form = ""
@@ -231,7 +246,11 @@ def find_login_errors(current_page):
 def execute_login(traveler_list, json_data):
     # Carrega o webdriver ChromeDriver e abre a página
     # Navegador leadless
-    current_page = webdriver.Chrome(OPTIONS)
+
+    # Configurar driver
+
+    #current_page = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=OPTIONS_HEADLESS)
+    current_page = webdriver.Chrome(OPTIONS_HEADLESS)
     
     if exit_GUI():
         # Navegado comum com GUI (debug)
@@ -294,7 +313,19 @@ def go_traveler_list(traveler_list, json_data, current_page):
                     if str(status).upper() == "CANCELADA":
                         return {"error": f'A solicitação número {traveler_list.num_solicitacao} foi cancelada.', "summary": None}
                     else:
-                        return {"error": f'A solicitação número {traveler_list.num_solicitacao} já foi emitida.', "summary": None}
+
+                        find_element_by_xpath(current_page, f'//*[@id="AutoNumber3"]/tbody/tr[{x}]/td[2]/a').click()
+                        new_page = current_page.window_handles[len(current_page.window_handles) - 1]
+                        current_page.switch_to.window(new_page)
+                        time.sleep(10)
+                        with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PATH_WORKDIR), encoding='utf-8') as my_json:
+                           json_data = json.load(my_json)
+                           path_workdir_emitidas = os.path.join(json_data["workdir"], 'emitidas')
+                           if not os.path.exists(path_workdir_emitidas):
+                               os.mkdir(path_workdir_emitidas)
+                           filename = os.path.join(ANTTSMARTBOT_SAVE_PAGES_PATH, f'{traveler_list.num_solicitacao}.html')
+                           save_the_html_page(current_page, filename)
+                        return {"error": f'A solicitação número {traveler_list.num_solicitacao} já foi emitida. {filename}', "summary": None}
             x += 1
         except NoSuchElementException:
             break

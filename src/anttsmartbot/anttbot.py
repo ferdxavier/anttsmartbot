@@ -1,13 +1,26 @@
 import os, json, sys
 from .spy import main_spy
+from PIL import Image
 from .features import describe_list, remove_list, add_file, find_manifest
 from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, \
                                 JSON_AUTH_SITE_FILE_NAME, JSON_PATH_WORKDIR, \
-                                DEFAULT_WORKDIR, DEFAULT_COMPANY, ID_PAGE
+                                DEFAULT_WORKDIR, DEFAULT_COMPANY, ID_PAGE, \
+                                ANTTSMARTBOT_ADD_ONE_LIST_PATH, ANTTSMARTBOT_SAVE_PAGES_PATH, \
+                                ANTTSMARTBOT_IMAGE_PATH, IMAGE_ANTTEXTENSO
 
 def init():
     if not os.path.exists(ANTTSMARTBOT_CONFIGS_PATH):
         os.mkdir(ANTTSMARTBOT_CONFIGS_PATH)
+    if not os.path.exists(ANTTSMARTBOT_ADD_ONE_LIST_PATH):
+        os.mkdir(ANTTSMARTBOT_ADD_ONE_LIST_PATH)
+    if not os.path.exists(ANTTSMARTBOT_SAVE_PAGES_PATH):
+        os.mkdir(ANTTSMARTBOT_SAVE_PAGES_PATH)
+    if not os.path.exists(ANTTSMARTBOT_IMAGE_PATH):
+        os.mkdir(ANTTSMARTBOT_IMAGE_PATH)
+    if not os.path.exists(os.path.join(ANTTSMARTBOT_IMAGE_PATH, 'anttextenso.png')):
+        img = Image.open('./images/anttextenso.png')
+        img.save(os.path.join(ANTTSMARTBOT_IMAGE_PATH, IMAGE_ANTTEXTENSO))
+
     if not os.path.exists(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME)):
         with open(os.path.join(ANTTSMARTBOT_CONFIGS_PATH, JSON_AUTH_SITE_FILE_NAME) , "w") as file:
             json.dump(DEFAULT_COMPANY, file, indent=4)

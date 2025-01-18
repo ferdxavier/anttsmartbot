@@ -1,6 +1,12 @@
 import os
 
-ANTTSMARTBOT_CONFIGS_PATH = os.path.join(os.path.expanduser("~"), ".anttsmartbot")
+
+ANTTSMARTBOT_INTERNAL_WORKDIR_PATH = os.path.join(os.path.expanduser("~"), ".anttsmartbot")
+ANTTSMARTBOT_ADD_ONE_LIST_PATH = os.path.join(ANTTSMARTBOT_INTERNAL_WORKDIR_PATH, "list")
+ANTTSMARTBOT_SAVE_PAGES_PATH = os.path.join(ANTTSMARTBOT_INTERNAL_WORKDIR_PATH, "pages")
+ANTTSMARTBOT_IMAGE_PATH = os.path.join(ANTTSMARTBOT_INTERNAL_WORKDIR_PATH, "images")
+ANTTSMARTBOT_CONFIGS_PATH = os.path.join(ANTTSMARTBOT_INTERNAL_WORKDIR_PATH, "config")
+IMAGE_ANTTEXTENSO = "anttextenso.png"
 JSON_AUTH_SITE_FILE_NAME = "json_auth_site.json"
 JSON_PAGES_MAP_FILE = "json_pages_map.json"
 JSON_PATH_WORKDIR = "json_path_workdir.json"
