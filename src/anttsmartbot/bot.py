@@ -6,6 +6,7 @@ from .models import model
 from .models.model import Passageiro
 from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, JSON_PATH_WORKDIR, \
                                 ANTTSMARTBOT_SAVE_PAGES_PATH
+from .tools.output import output_log
 import json, sys, time, os
 from os.path import join
 from selenium.webdriver.chrome.options import Options
@@ -69,28 +70,23 @@ def local_click(action):
             time.sleep(TIME_WAIT_ANOTHER_CLICK)
 
 # Preenche o formulário com os dados do passageiro
-def set_traveler_in_form(current_page, passageiro):
-    time.sleep(TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER)
+def set_traveler_in_form(current_page, passageiro: Passageiro):
+    #time.sleep(TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER)
 
     attempt = 0
     data_form = "first_loop"
     while not len(data_form) == 0:
-        print(f'{passageiro} : {not len(data_form)}')
         if attempt == NUM_ATTEMPTS_TO_ACESS_ELEMENT:
             raise NumberOffortExceeded("Number of effort exceeded in add traveller.")
         data_form = ""
         data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input' ).text.strip()
         data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[9]/td[2]/input' ).text.strip()
         data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[10]/td[2]/input').text.strip()
+        #print(f'{passageiro.nome} : {not len(data_form) == 0}')
         if not len(data_form) == 0:
             time.sleep(TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER)
             attempt += 1
-    #data_form = current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input' ).text.strip()
-    #data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[9]/td[2]/input' ).text.strip()
-    #data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[10]/td[2]/input').text.strip()
-    #print(f'data_form: {not data_form} -- {data_form} --> Passageiro lista: {passageiro.nome}')
-    #if not len(data_form) == 0:
-     #   time.sleep(5)
+            
     current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input').send_keys(passageiro.nome)
     current_page.find_element("xpath", '//*[@id="telefone"]').send_keys(passageiro.telefone)
     combobox_select(current_page.find_element("xpath", '//*[@id="cmbMotivoViagem"]'), passageiro.situacao)
@@ -391,6 +387,8 @@ def execute_add(traveler_list: model.ListaViagem):
                         set_traveler_in_form(current_page, passageiro)
                         find_element_by_xpath(current_page, '//*[@id="btnInc"]').click()
 
+                        output_log(f'execute_add: {passageiro.nome}-{passageiro.situacao}-{passageiro.numero_doc}-{passageiro.tipo_doc}-{passageiro.orgao}')
+
                         #print(f'_______traveler_list_adder_page == {get_current_page_url(current_page)}')
                         if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/font/b', json_data["traveler_list_adder_page"]):
                             return {"error": f'A página não foi encontrada! Local: traveler_list_adder_page', "summary": None}
@@ -483,44 +481,43 @@ def execute_remove(traveler_list: model.ListaViagem):
 
     with open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE), encoding='utf-8') as my_json:
         json_data = json.load(my_json)
+        while True:
+            try:
+                # Realiza o Login
+                result_login = execute_login(traveler_list, json_data)
+                if result_login['error']:
+                    return {"error": result_login['error'], "summary": None}
+                
+                current_page = result_login["current_page"]
 
-    while True:
-        try:
-            # Realiza o Login
-            result_login = execute_login(traveler_list, json_data)
-            if result_login['error']:
-                return {"error": result_login['error'], "summary": None}
-            
-            current_page = result_login["current_page"]
-
-            # Vai até a lista de passageiros
-            traveler_list.tipo_viagem = "ARTIGO37I"
-            result_traveler_list = go_traveler_list(traveler_list, json_data, current_page)
-            if result_traveler_list['error'] == f'A solicitação número {traveler_list.num_solicitacao} não foi encontrada.':
-                traveler_list.tipo_viagem = "NORMAL"
-                current_page.back()
-                current_page.back()
+                # Vai até a lista de passageiros
+                traveler_list.tipo_viagem = "ARTIGO37I"
                 result_traveler_list = go_traveler_list(traveler_list, json_data, current_page)
-                if result_traveler_list['error']:
-                    return {"error": result_traveler_list['error'], "summary": None}
-            
-            current_page = result_traveler_list["current_page"]
-            
-            if remove_travelers(current_page):
-                traveler_list.passageiros = []
-            current_page.quit()
-            return {"error": None, "travelers":  traveler_list}
+                if result_traveler_list['error'] == f'A solicitação número {traveler_list.num_solicitacao} não foi encontrada.':
+                    traveler_list.tipo_viagem = "NORMAL"
+                    current_page.back()
+                    current_page.back()
+                    
+                    result_traveler_list = go_traveler_list(traveler_list, json_data, current_page)
+                    if result_traveler_list['error']:
+                        return {"error": result_traveler_list['error'], "summary": None}
+                
+                current_page = result_traveler_list["current_page"]            
+                if remove_travelers(current_page):
+                    traveler_list.passageiros = []
+                current_page.quit()
+                return {"error": None, "travelers":  traveler_list}
         
-        except PageNotFoundExcept:
-            time.sleep(TIME_RECONNECT)
-        except NumberOffortExceeded:
-            time.sleep(TIME_RECONNECT) 
-        except WebDriverException:
-            time.sleep(TIME_RECONNECT)
-        except ReadTimeoutError:
-            time.sleep(TIME_RECONNECT)
-        except KeyboardInterrupt:
-            break
+            except PageNotFoundExcept:
+                time.sleep(TIME_RECONNECT)
+            except NumberOffortExceeded:
+                time.sleep(TIME_RECONNECT) 
+            except WebDriverException:
+                time.sleep(TIME_RECONNECT)
+            except ReadTimeoutError:
+                time.sleep(TIME_RECONNECT)
+            except KeyboardInterrupt:
+                break
 
     return {"error": f'Erro ao tentar abrir "{ open(join(ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE)) }"', "summary": None}
 

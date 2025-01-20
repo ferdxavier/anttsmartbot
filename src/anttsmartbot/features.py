@@ -47,7 +47,7 @@ def remove_list(placa: str, solicitacao: str):
         print()
         print(f'   | Placa........: {str(traveler_list.placa).upper()}')
         print(f'   | Solicicação..: {traveler_list.num_solicitacao}')
-        print(f'   | {len(traveler_list.passageiros)} passageiro(s) encontrados.')
+        #print(f'   | {len(traveler_list.passageiros)} passageiro(s) encontrados.')
         print()
         data = execute_remove(traveler_list)
         if not data['error']:
