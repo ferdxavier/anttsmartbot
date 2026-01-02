@@ -1,4 +1,6 @@
 import pandas as pd
+import unicodedata
+import re
 
 class Passageiro:
     id: str
@@ -20,183 +22,180 @@ class ListaViagem:
     passageiros = []
 
 SITUACAO = [
-    # SITUACAO[0]
-    "Brasileiro Maior",
-    
-    # SITUACAO[1]
-    "Brasileiro Adolescente",
-    
-    # SITUACAO[2]
-    "Brasileiro Criança",
-    
-    # SITUACAO[3]
-    "Estrageiro"
+    "Brasileiro Maior",      # SITUACAO[0]
+    "Brasileiro Adolescente",# SITUACAO[1]
+    "Brasileiro Criança",    # SITUACAO[2]
+    "Estrageiro"             # SITUACAO[3]
 ]
 
 TIPO_DOCUMENTO = {
-        # Brasileiro Maior
-        f'{SITUACAO[0]}': [
-                "Carteira de Identidade",
-                "Carteira Profissional",
-                "Registro de Identificação Civil - RIC",
-                "Carteira de Trabalho",
-                "Passaporte Brasileiro",
-                "Carteira Nacional de Habilitação - CNH",
-                "Autorização de Viagem - FUNAI",
-                "CPF" 
-            ],
-        # Brasileiro Adolescente
-        f'{SITUACAO[1]}': [
-                "Carteira de Identidade",
-                "Carteira Profissional",
-                "Registro de Identificação Civil - RIC",
-                "Carteira de Trabalho",
-                "Passaporte Brasileiro",
-                "Carteira Nacional de Habilitação - CNH",
-                "Autorização de Viagem - FUNAI",
-                "CPF" 
-            ],
-        # Brasileiro Criança
-        f'{SITUACAO[2]}': [
-                "Passaporte Brasileiro",
-                "Certidão Nascimento",
-                "Carteira de Identidade",
-                "Autorização de Viagem - FUNAI",
-                "CPF"
-            ], 
-        # Estrageiro
-        f'{SITUACAO[3]}': [
-                "Passaporte Estrageiro",
-                "Cédula de Identidade de Estrangeiro -CIE",
-                "Identidade diplomática ou consular",
-                "Outro documento legal de viagem"
-        ] 
-    }
+    f'{SITUACAO[0]}': [
+        "Carteira de Identidade", "Carteira Profissional", "Registro de Identificação Civil - RIC",
+        "Carteira de Trabalho", "Passaporte Brasileiro", "Carteira Nacional de Habilitação - CNH",
+        "Autorização de Viagem - FUNAI", "CPF"
+    ],
+    f'{SITUACAO[1]}': [
+        "Carteira de Identidade", "Carteira Profissional", "Registro de Identificação Civil - RIC",
+        "Carteira de Trabalho", "Passaporte Brasileiro", "Carteira Nacional de Habilitação - CNH",
+        "Autorização de Viagem - FUNAI", "CPF"
+    ],
+    f'{SITUACAO[2]}': [
+        "Passaporte Brasileiro", "Certidão Nascimento", "Carteira de Identidade",
+        "Autorização de Viagem - FUNAI", "CPF"
+    ],
+    f'{SITUACAO[3]}': [
+        "Passaporte Estrageiro", "Cédula de Identidade de Estrangeiro -CIE",
+        "Identidade diplomática ou consular", "Outro documento legal de viagem"
+    ]
+}
 
-TIPO_VIAGEM = [
-    "NORMAL",
-    "ARTIGO37I"
-]
-    
-def load_traveler_List(str):
+TIPO_VIAGEM = ["NORMAL", "ARTIGO37I"]
+
+def remove_accents(text):
+    """Remove acentos para fins de comparação lógica."""
+    if not text or text == 'nan': return ""
     try:
-        dataframe = pd.read_excel(str)
+        text = unicodedata.normalize('NFD', str(text))
+        text = re.sub(r'[\u0300-\u036f]', '', text)
+        return text.strip()
+    except:
+        return str(text)
+
+def load_traveler_List(file_path):
+    try:
+        dataframe = pd.read_excel(file_path)
         data = load_file(dataframe)
-        
         if data["error"]:
-            return {'error': data["error"], 'traveler_List': None} 
-        
+            return {'error': data["error"], 'traveler_List': None}
         return {'error': None, 'traveler_List': data["traveler_List"]}
     except FileNotFoundError:
-        return {'error': f'Arquivo "{str}" não encontrado!', 'traveler_List': None}
-    
+        return {'error': f'Arquivo "{file_path}" não encontrado!', 'traveler_List': None}
+
 def load_file(dataframe):
     lista = ListaViagem()
     lista.passageiros = []
     try:
-        lista.placa = str(dataframe.iloc[0, 2]).upper().strip().replace("-", "").replace(" ", "").replace(".", "").replace("--", "").replace("  ", "")
-        lista.tipo_viagem = str(dataframe.iloc[1, 2]).strip()
-        if lista.tipo_viagem not in TIPO_VIAGEM:
-            return {"error": "Verifique o tipo da viagem. (NORMAL OU ATIPICA)", "traveler_List": None}
+        # Placa: Removemos tudo para padronizar
+        placa_raw = str(dataframe.iloc[0, 2]).upper().replace("-", "").replace(" ", "").replace(".", "")
+        lista.placa = remove_accents(placa_raw)
+        
+        # Tipo Viagem: Compara normalizado mas busca o original
+        tipo_raw = str(dataframe.iloc[1, 2]).strip().upper()
+        lista.tipo_viagem = None
+        for tv in TIPO_VIAGEM:
+            if remove_accents(tv).upper() == remove_accents(tipo_raw):
+                lista.tipo_viagem = tv
+                break
+        
+        if not lista.tipo_viagem:
+            return {"error": "Tipo da viagem inválido. (NORMAL OU ARTIGO37I)", "traveler_List": None}
+            
         lista.num_solicitacao = str(dataframe.iloc[2, 2]).strip()
         return load_travelers(dataframe, lista)
     except IndexError:
-        return {"error": "Verifique o cabeçalho do arquivo. (placa, Tipo da Viagem ou número da solicitação)", "traveler_List": None}
+        return {"error": "Verifique o cabeçalho do arquivo.", "traveler_List": None}
 
-def is_list_file(passageiros, passeiro_for_add: Passageiro):
-    pass_primary_key_add = str(passeiro_for_add.nome + passeiro_for_add.numero_doc + passeiro_for_add.orgao).upper()
-    for passageiro in passageiros:
-        pass_primary_key_list = str(passageiro.nome + passageiro.numero_doc + passageiro.orgao).upper()
-        if pass_primary_key_add == pass_primary_key_list:
-            return passageiro.id
+def is_list_file(passageiros, p_add: Passageiro):
+    key_add = remove_accents(p_add.nome + p_add.numero_doc + p_add.orgao).upper()
+    for p in passageiros:
+        key_list = remove_accents(p.nome + p.numero_doc + p.orgao).upper()
+        if key_add == key_list:
+            return p.id
     return None
-    
+
 def load_travelers(dataframe, lista):
     rows = dataframe[6:]
-    #discart_flag = True
     for r in range(0, len(rows)):
         passageiro = Passageiro()
-        passageiro.id = rows.iloc[r, 0]
+        passageiro.id = str(rows.iloc[r, 0])
         
-        passageiro.nome = str(rows.iloc[r, 1]).strip().replace("  ", " ").replace("   ", " ").replace("    ", " ").replace("     ", " ").replace("      ", " ").replace("       ", " ")
-        passageiro.numero_doc = str(rows.iloc[r, 2]).replace("  ", " ").replace("   ", " ").replace("    ", " ").replace("     ", " ").replace("      ", " ").replace("       ", " ")
-        
+        # Carregamos limpando apenas espaços, sem remover acentos ainda
+        passageiro.nome = str(rows.iloc[r, 1]).strip()
+        passageiro.numero_doc = str(rows.iloc[r, 2]).strip()
         passageiro.tipo_doc = str(rows.iloc[r, 3]).strip()
-       # if passageiro.tipo_doc.upper() == "CPF":
-       #     cpf_temp = passageiro.numero_doc.replace("-", "").replace(".", "")
-       #     cpf = cpf_temp[:3] + "." + cpf_temp[3:6] + "." + cpf_temp[6:9] + "-" + cpf_temp[9:]
-       
-        passageiro.orgao = str(rows.iloc[r, 4]).strip().replace("  ", " ").replace("   ", " ").replace("    ", " ").replace("     ", " ").replace("      ", " ").replace("       ", " ")
-        
+        passageiro.orgao = str(rows.iloc[r, 4]).strip()
         passageiro.situacao = str(rows.iloc[r, 5]).strip()
         passageiro.crianca_colo = str(rows.iloc[r, 6]).strip()
         passageiro.telefone = str(rows.iloc[r, 7]).strip()
+
         result = isValidPassageiro(passageiro)
-        if not result == 'discard':
+        
+        if result != 'discard':
             if not result:
-                result = is_list_file(lista.passageiros, passageiro)
-                if not result:
+                dup_id = is_list_file(lista.passageiros, passageiro)
+                if not dup_id:
                     lista.passageiros.append(passageiro)
                 else:
-                    return {"error": f'Os passeiros de números {result} e {r + 1} estão duplicados: {passageiro.nome}', "traveler_List": lista}
+                    return {"error": f'Passageiros {dup_id} e {passageiro.id} duplicados: {passageiro.nome}', "traveler_List": lista}
             else:
-                return {"error": f'Erro encontrado no passageiro número {r + 1}: {result}', "traveler_List": lista}
-        #else:
-            #if discart_flag:
-            #    print("  | Passageiros descartados (dados vazios)")
-            #    discart_flag = False
-            #print(f'     > {passageiro.id}')
-           
-    num_lap_child = lap_child_count(lista.passageiros)
-    if num_lap_child > (len(lista.passageiros) - num_lap_child):
-        return {"error": f'Não é possível digitalizar a viajem. Existem mais crianças de COLO do que outros tipos de passageiros.', "traveler_List": lista}
+                return {"error": f'Erro no passageiro {passageiro.id}: {result}', "traveler_List": lista}
+            
+    num_lap = lap_child_count(lista.passageiros)
+    if num_lap > (len(lista.passageiros) - num_lap):
+        return {"error": "Mais crianças de colo do que acompanhantes.", "traveler_List": lista}
     
     lista.passageiros = sort_list_by_situacao(lista.passageiros)
-    
     return {"error": None, "traveler_List": lista}
 
-def sort_list_by_situacao(passageiros):
-    lap_childs = []
-    adult = []
-    for passageiro in passageiros:
-        if str(passageiro.crianca_colo).upper() == "SIM":
-            lap_childs.append(passageiro)
-        else:
-            adult.append(passageiro)
+def isValidPassageiro(p: Passageiro):
+    if is_empty_line_except_id(p):
+        return 'discard'
     
-    adult.extend(lap_childs)
-    return adult
+    # Validação do Nome (permanece com regra de tamanho)
+    if len(p.nome) < 3 or p.nome == 'nan':
+        return "Nome inválido."
+
+    # --- AJUSTE: Permite "-" no Documento ---
+    if p.numero_doc == 'nan' or (len(p.numero_doc) < 3 and p.numero_doc != "-"):
+        return "Documento inválido."
+
+    # --- AJUSTE: Permite "-" no Tipo de Doc e Órgão ---
+    # 1. Validar e Corrigir Situação
+    sit_input = remove_accents(p.situacao).upper()
+    situacao_encontrada = None
+    for s in SITUACAO:
+        if remove_accents(s).upper() == sit_input:
+            situacao_encontrada = s
+            break
+            
+    if not situacao_encontrada:
+        return f"Situação inválida: {p.situacao}"
+    p.situacao = situacao_encontrada
+
+    # 2. Validar e Corrigir Tipo de Documento
+    # Se for "-", aceitamos sem buscar na lista TIPO_DOCUMENTO
+    if p.tipo_doc == "-":
+        p.tipo_doc = "-" 
+    else:
+        doc_input = remove_accents(p.tipo_doc).upper()
+        docs_possiveis = TIPO_DOCUMENTO[p.situacao]
+        doc_encontrado = None
+        for d in docs_possiveis:
+            if remove_accents(d).upper() == doc_input:
+                doc_encontrado = d
+                break
+        
+        if not doc_encontrado:
+            return f"Documento {p.tipo_doc} inválido para {p.situacao}"
+        p.tipo_doc = doc_encontrado
+
+    # 3. Validação Criança de Colo
+    if str(p.crianca_colo).upper() == "SIM":
+        if p.situacao != SITUACAO[2]:
+            return f'Para Criança de Colo, a situação deve ser "{SITUACAO[2]}"'
+            
+    return None
+def sort_list_by_situacao(passageiros):
+    lap = [p for p in passageiros if str(p.crianca_colo).upper() == "SIM"]
+    not_lap = [p for p in passageiros if str(p.crianca_colo).upper() != "SIM"]
+    return not_lap + lap
 
 def lap_child_count(passageiros):
-    num = 0
-    for passageiro in passageiros:
-        if str(passageiro.crianca_colo).upper() == "SIM":
-            num += 1
-    return num
+    return sum(1 for p in passageiros if str(p.crianca_colo).upper() == "SIM")
 
 def check_line(value: str):
-    if value == 'nan' or len(value.strip()) == 0:
-        return True
-    return False
+    return value == 'nan' or len(str(value).strip()) == 0
 
-def is_empty_line_except_id(passageiro: Passageiro):
-    return check_line(passageiro.nome) and check_line(passageiro.numero_doc) and check_line(passageiro.tipo_doc) and check_line(passageiro.orgao) and check_line(passageiro.situacao) and check_line(passageiro.crianca_colo) and check_line(passageiro.telefone)
-    
-def isValidPassageiro(passageiro: Passageiro):
-    if is_empty_line_except_id(passageiro):
-        return f'discard'
-    
-    if len(passageiro.nome) < 3 or passageiro.nome == 'nan':
-        return "Nome inválido."
-    if len(passageiro.numero_doc) < 3 or passageiro.numero_doc == 'nan':
-        return "Documento inválido."
-    if len(passageiro.orgao) < 2 or passageiro.orgao == 'nan':
-        return "Órgão é inválido."
-    if not passageiro.situacao in SITUACAO:
-        return f'A situação do passageiro é inválida: ({passageiro.situacao}). Opções: {SITUACAO}'
-    if not passageiro.tipo_doc in TIPO_DOCUMENTO[passageiro.situacao]:
-        return f'O tipo de documento é inválido: ({passageiro.tipo_doc}). Opções: {TIPO_DOCUMENTO[passageiro.situacao]}'
-    if str(passageiro.crianca_colo).upper() == "SIM" and str(passageiro.situacao).upper() != str(SITUACAO[2]).upper():
-        return f'O campo SITUAÇÃO deve ser informado como "{SITUACAO[2]}" para Criança de Colo.'
-    
-    return None
+def is_empty_line_except_id(p: Passageiro):
+    fields = [p.nome, p.numero_doc, p.tipo_doc, p.orgao, p.situacao, p.crianca_colo, p.telefone]
+    return all(check_line(f) for f in fields)

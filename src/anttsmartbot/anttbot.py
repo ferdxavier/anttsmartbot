@@ -6,11 +6,17 @@ from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, \
                                 JSON_AUTH_SITE_FILE_NAME, JSON_PATH_WORKDIR, \
                                 DEFAULT_WORKDIR, DEFAULT_COMPANY, ID_PAGE, \
                                 ANTTSMARTBOT_ADD_ONE_LIST_PATH, ANTTSMARTBOT_SAVE_PAGES_PATH, \
-                                ANTTSMARTBOT_IMAGE_PATH, IMAGE_ANTTEXTENSO
+                                ANTTSMARTBOT_IMAGE_PATH, IMAGE_ANTTEXTENSO, \
+                                ANTTSMARTBOT_INTERNAL_WORKDIR_PATH, LOG_PROCESS_MESSAGES_FILE
 
 def init():
+    if not os.path.exists(ANTTSMARTBOT_INTERNAL_WORKDIR_PATH):
+        os.mkdir(ANTTSMARTBOT_INTERNAL_WORKDIR_PATH)
     if not os.path.exists(ANTTSMARTBOT_CONFIGS_PATH):
         os.mkdir(ANTTSMARTBOT_CONFIGS_PATH)
+    if not os.path.exists(os.path.join(ANTTSMARTBOT_INTERNAL_WORKDIR_PATH, LOG_PROCESS_MESSAGES_FILE)):
+        with open(os.path.join(ANTTSMARTBOT_INTERNAL_WORKDIR_PATH, LOG_PROCESS_MESSAGES_FILE), 'w') as file:
+            pass
     if not os.path.exists(ANTTSMARTBOT_ADD_ONE_LIST_PATH):
         os.mkdir(ANTTSMARTBOT_ADD_ONE_LIST_PATH)
     if not os.path.exists(ANTTSMARTBOT_SAVE_PAGES_PATH):

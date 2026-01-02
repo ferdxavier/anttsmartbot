@@ -84,7 +84,7 @@ def find_manifest(placa: str, list=True):
                     print(f'   | Solicicações pendentes..: {manifest["solicitacao"]} ({manifest["tipo_viagem"]}) - Contratante: {manifest["contratante"]} | Data de início: {manifest["dt_inicio"]}')
                     ctrl = False
                 elif list:
-                    print(f'                             : {manifest["solicitacao"]} ({manifest["tipo_viagem"]}) - Contratante: {manifest["contratante"]} | Data de início: {manifest["t_inicio"]}')
+                    print(f'                             : {manifest["solicitacao"]} ({manifest["tipo_viagem"]}) - Contratante: {manifest["contratante"]} | Data de início: {manifest["dt_inicio"]}')
             if len(data['manifests']) == 0 and list:
                 print("   | Solicicações pendentes..: Nenhuma solicitação pendente.")
         if list:

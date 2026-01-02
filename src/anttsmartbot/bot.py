@@ -9,13 +9,6 @@ from .tools.constants import ANTTSMARTBOT_CONFIGS_PATH, JSON_PAGES_MAP_FILE, JSO
 from .tools.output import output_log
 import json, sys, time, os
 from os.path import join
-from selenium.webdriver.chrome.options import Options
-import pdfkit
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
 
 # Configurações navegador headless
@@ -25,10 +18,23 @@ OPTIONS_HEADLESS.add_argument("--disable-gpu")
 OPTIONS_HEADLESS.add_argument("--no-sandbox")
 
 # Constantes utilizadas na execução do fluxo
+TIME_RECONNECT = 15
+TIME_WAIT_SMALL = 0.2
+NUM_ATTEMPTS_TO_ACESS_ELEMENT = 40
+TRY_MANIFEST_PAGE = 12
+TIME_TRY_MANIFEST_PAGE = 0.4
+TIME_WAIT_ANOTHER_CLICK = 0.6
+TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER = 0.4
+MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solicitacao1.asp?cmdOpcao=Consultar&txtNumeroSolicitacao='
+PATH_WEBDRIVER = "../../webdriver/chromedriver"
+LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
+
+
+# Constantes utilizadas na execução do fluxo
 """
 TIME_RECONNECT = 30
-TIME_WAIT_SMALL = 0.08
-NUM_ATTEMPTS_TO_ACESS_ELEMENT = 50
+TIME_WAIT_SMALL = 2
+NUM_ATTEMPTS_TO_ACESS_ELEMENT = 30
 TRY_MANIFEST_PAGE = 20
 TIME_TRY_MANIFEST_PAGE = 0.8
 TIME_WAIT_ANOTHER_CLICK = 0.6
@@ -36,18 +42,6 @@ MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solic
 PATH_WEBDRIVER = "../../webdriver/chromedriver"
 LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
 """
-
-# Constantes utilizadas na execução do fluxo
-TIME_RECONNECT = 15
-TIME_WAIT_SMALL = 0.02
-NUM_ATTEMPTS_TO_ACESS_ELEMENT = 30
-TRY_MANIFEST_PAGE = 8
-TIME_TRY_MANIFEST_PAGE = 0.25
-TIME_WAIT_ANOTHER_CLICK = 0.2
-TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER = 0.25
-MANIFEST_PAGE = 'https://appweb1.antt.gov.br/autorizacaoDeViagem/AvPublico/solicitacao1.asp?cmdOpcao=Consultar&txtNumeroSolicitacao='
-PATH_WEBDRIVER = "../../webdriver/chromedriver"
-LOGIN_ERROR_MESSAGES = ["Informações incorretas. Por favor tente novamente.", "VEÍCULO NÃO HABILITADO.", "error '80020009'"]
 
 def save_the_html_page(current_page: webdriver.Chrome, filename):
     page_source = current_page.page_source
@@ -71,7 +65,7 @@ def local_click(action):
 
 # Preenche o formulário com os dados do passageiro
 def set_traveler_in_form(current_page, passageiro: Passageiro):
-    #time.sleep(TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER)
+    time.sleep(TIME_WAIT_ANOTHER_CLEAR_FORM_TRAVELLER)
 
     attempt = 0
     data_form = "first_loop"
@@ -80,7 +74,7 @@ def set_traveler_in_form(current_page, passageiro: Passageiro):
             raise NumberOffortExceeded("Number of effort exceeded in add traveller.")
         data_form = ""
         data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[4]/td[2]/input' ).text.strip()
-        data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[9]/td[2]/input' ).text.strip()
+        #data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[9]/td[2]/input' ).text.strip()
         data_form += current_page.find_element("xpath", '//*[@id="AutoNumber2"]/tbody/tr[10]/td[2]/input').text.strip()
         #print(f'{passageiro.nome} : {not len(data_form) == 0}')
         if not len(data_form) == 0:
@@ -184,6 +178,10 @@ def find_element_by_xpath(current_page, xpath):
     attempt = 0
     while True:
         try:
+           # if xpath=='//*[@id="AutoNumber2"]/tbody/tr[45]/td[2]/input[2]':
+           #    print(xpath)
+           #    print(current_page.current_url)
+           #    time.sleep(20)
             return current_page.find_element("xpath", xpath)
         except NoSuchElementException:
             if attempt == NUM_ATTEMPTS_TO_ACESS_ELEMENT:
@@ -197,6 +195,7 @@ def find_element_by_xpath(current_page, xpath):
         finally:
             time.sleep(TIME_WAIT_SMALL)
             attempt += 1
+
 
 # Procura um elemente na página para identificá-la com válida ou carregada            
 def is_page_valid_by_xpath(current_page, xpath, value):
@@ -248,9 +247,9 @@ def execute_login(traveler_list, json_data):
     #current_page = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=OPTIONS_HEADLESS)
     current_page = webdriver.Chrome(OPTIONS_HEADLESS)
     
-    if exit_GUI():
+    #if exit_GUI():
         # Navegado comum com GUI (debug)
-        current_page = webdriver.Chrome()
+        #current_page = webdriver.Chrome()
     
     current_page.get(traveler_list.site)
     #print(f'______________________home_page == {get_current_page_url(current_page)}')
@@ -285,7 +284,8 @@ def go_traveler_list(traveler_list, json_data, current_page):
         if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/font/b', json_data["available_travel_options_page"]):
             return {"error": f'A página não foi encontrada! Local: available_travel_options_page', "summary": None} 
         find_element_by_xpath(current_page, '//*[@id="AutoNumber1"]/tbody/tr[5]/td[4]/input').click()
-        path_button_avancar = '//*[@id="AutoNumber2"]/tbody/tr[45]/td[2]/input[2]'
+        path_button_avancar =  '//*[@id="AutoNumber2"]/tbody/tr[45]/td[2]/input[2]'
+
     else:
         return {"error": f'O tipo da viagem é inválido. Tente "NORMAL" ou "ARTIGO37I"', "summary": None} 
         
@@ -293,6 +293,7 @@ def go_traveler_list(traveler_list, json_data, current_page):
     if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/h4', json_data["request_list_page"]):
         return {"error": f'A página não foi encontrada! Local: request_list_page', "summary": None} 
     
+
     # Procura pela solicitação desejada e a seleciona
     find_flag = False
     x = 2
@@ -325,7 +326,6 @@ def go_traveler_list(traveler_list, json_data, current_page):
             x += 1
         except NoSuchElementException:
             break
-            
 
     if not find_flag:
         return {"error": f'A solicitação número {traveler_list.num_solicitacao} não foi encontrada.', "summary": None}
@@ -338,14 +338,14 @@ def go_traveler_list(traveler_list, json_data, current_page):
         if try_manifest_page > TRY_MANIFEST_PAGE:
             break
         try_manifest_page += 1
-        
+
     #print(f'__________________manifest_page == {get_current_page_url(current_page)}')
     if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/h4', json_data["manifest_page"]):
         return {"error": f'A página não foi encontrada! Local: manifest_page', "summary": None}
     
     # Pega o número de passageiros no manifesto e passa para a página a diante                                                                     
     traveler_number_in_solicitacao = int(str(find_element_by_xpath(current_page, '//*[@id="AutoNumber2"]/tbody/tr[36]/td[2]/input').get_attribute('value')))
-    
+
     find_element_by_xpath(current_page, path_button_avancar).click()
     #print(f'____________traveler_adder_page == {get_current_page_url(current_page)}')
     if not is_page_valid_by_xpath(current_page, '/html/body/table[3]/tbody/tr/td/h4', json_data["traveler_adder_page"]):

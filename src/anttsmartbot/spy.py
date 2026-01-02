@@ -16,6 +16,21 @@ def process_file(file, path_workdir):
     print_and_log(f'  | Arquivo......: {file["name"]}')
     data = processList(file["fullpath"])
     if not data["error"]:
+        '''
+        print_and_log('\n  --- Detalhes dos Passageiros ---')
+        for idx, passageiro in enumerate(data["traveler_List"].passageiros):
+            print_and_log(f'  [Passageiro {idx + 1}]')
+            print_and_log(f'    ID...............: {passageiro.id}')
+            print_and_log(f'    NOME.............: {passageiro.nome}')
+            print_and_log(f'    DOCUMENTO........: {passageiro.numero_doc}')
+            print_and_log(f'    TIPO DOC.........: {passageiro.tipo_doc}')
+            print_and_log(f'    ORGÃO DOC........: {passageiro.orgao}')
+            print_and_log(f'    SITUAÇÃO.........: {passageiro.situacao}')
+            print_and_log(f'    CRIANÇA DE COLO..: {passageiro.crianca_colo}')
+            print_and_log(f'    TELEFONE.........: {passageiro.telefone}')
+        print_and_log('  --------------------------------')
+        '''
+        print()
         traveler_in_file = len(data["traveler_List"].passageiros)
         print_and_log(f'  | Placa........: {str(data["traveler_List"].placa).upper()}')
         print_and_log(f'  | Solicicacao..: {data["traveler_List"].num_solicitacao}')
